@@ -1,42 +1,71 @@
 # © 2020 Lawrence Chiappelli. All Rights Rerserved.
-
 import os
+import warnings
 
 
 class PuzzleInterface:
 
     def __init__(self):
-        self.all_puzzles = [puzzlefile for puzzlefile in os.listdir('CSCI4463SudokuPuzzles') if puzzlefile.endswith(".txt")]
+        self.all_puzzle_files = [puzzlefile for puzzlefile in os.listdir('CSCI4463SudokuPuzzles') if puzzlefile.endswith(".txt")]
 
-    def get_puzzles(self):
-        return self.all_puzzles
+    def get_all_csci4463_puzzle_files(self):
+        return self.all_puzzle_files
 
-    def solve_puzzle_with_CSP_search_technique(self, puzz):
+    def get_a_csci4463_puzzle_file(self, index):
+        return self.all_puzzle_files[index]
 
-        goal_state = False
-        if goal_state:
-            return puzz
+    def get_a_csci4463_puzzle_from_file(self, file):
+        try:
+            with open(f'CSCI4463SudokuPuzzles/{file}', 'r') as file_contents:
+                puzzle = file_contents.read()
+                return puzzle
+        except FileNotFoundError as fnfe:
+            warnings.warn(f"Files were not found:\n{fnfe}\n\nLast check for files- searching root directory...", UserWarning)
+            with open(file, 'r') as puzzle:
+                return puzzle
+
+    def solve_puzzle_with_constraint_propagation(self, puzzle):
+
+        if self._is_valid_board(puzzle):
+
+            for number in puzzle:
+                if number == 0:
+                    self._assign_and_satisfy_constaint(puzzle, number)
+
+            puzzle_solved = self._is_puzzle_solved(puzzle)
+            if puzzle_solved:
+                return puzzle
+            else:
+                return None
+
+    def _is_valid_board(self, puzzle):
+
+        counted_tiles = 0
+        max_possible_tiles = 81
+
+        for tile in puzzle:
+            if str(tile).isdigit():
+                counted_tiles += 1
+
+        if counted_tiles != max_possible_tiles:
+            raise AssertionError(f"Invalid Sudoku board detected, counted {counted_tiles}/{max_possible_tiles} possible tiles.")
+
+    def _assign_and_satisfy_constaint(self, puzzle, number):
+        new_number = None
+        for new_number in range(1, 9):
+            pass
+
+        return new_number
+
+    def _is_puzzle_solved(self, puzzle):
+        if puzzle == puzzle:
+            return False
         else:
-            return None
+            return True
 
+    def _util_3(self, a, b):
+        return a, b
 
-if __name__ == '__main__':
-
-    puzzleinterface = PuzzleInterface()
-
-    solved = None
-    for puzzle in puzzleinterface.get_puzzles():
-
-        solved = puzzleinterface.solve_puzzle_with_CSP_search_technique(puzzle)
-
-        if solved:
-            print(solved)
-        else:
-            print(f"Unable to solve puzzle: {puzzle}")
-
-
-else:
-    raise ModuleNotFoundError(f"Please set SudokuPuzzleSolver.py as the script path!")
 
 """
 MIT License
