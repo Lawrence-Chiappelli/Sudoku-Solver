@@ -1,6 +1,7 @@
 # © 2020 Lawrence Chiappelli. All Rights Rerserved.
 import os
 import warnings
+import copy
 
 
 class PuzzleInterface:
@@ -14,7 +15,7 @@ class PuzzleInterface:
     def get_a_csci4463_puzzle_file(self, index):
         return self.all_puzzle_files[index]
 
-    def get_a_csci4463_puzzle_from_file(self, file):
+    def read_puzzle_from_file(self, file):
         try:
             with open(f'CSCI4463SudokuPuzzles/{file}', 'r') as file_contents:
                 puzzle = file_contents.read()
@@ -24,47 +25,94 @@ class PuzzleInterface:
             with open(file, 'r') as puzzle:
                 return puzzle
 
-    def solve_puzzle_with_constraint_propagation(self, puzzle):
+    def solve_puzzle_with_backtracking(self, puzzle):
 
-        if self._is_valid_board(puzzle):
+        empty_tile = self._get_tile_position(puzzle)
 
-            for number in puzzle:
-                if number == 0:
-                    self._assign_and_satisfy_constaint(puzzle, number)
-
-            puzzle_solved = self._is_puzzle_solved(puzzle)
-            if puzzle_solved:
-                return puzzle
-            else:
-                return None
-
-    def _is_valid_board(self, puzzle):
-
-        counted_tiles = 0
-        max_possible_tiles = 81
-
-        for tile in puzzle:
-            if str(tile).isdigit():
-                counted_tiles += 1
-
-        if counted_tiles != max_possible_tiles:
-            raise AssertionError(f"Invalid Sudoku board detected, counted {counted_tiles}/{max_possible_tiles} possible tiles.")
-
-    def _assign_and_satisfy_constaint(self, puzzle, number):
-        new_number = None
-        for new_number in range(1, 9):
-            pass
-
-        return new_number
-
-    def _is_puzzle_solved(self, puzzle):
-        if puzzle == puzzle:
-            return False
-        else:
+        if empty_tile is None:
             return True
+        else:
+            row_pos, col_pos = empty_tile
 
-    def _util_3(self, a, b):
-        return a, b
+        for test_val in range(1, 10):
+            if self._check_newval_validity(row_pos, col_pos, test_val, puzzle):
+                puzzle[row_pos][col_pos] = test_val
+
+                if self.solve_puzzle_with_backtracking(puzzle):
+                    return self.print_board_organized(puzzle)
+
+                # Here, reset the tile to 0 (backtrack) if the given solutions do not work
+                puzzle[row_pos][col_pos] = 0
+
+        return False
+
+    def _check_newval_validity(self, row, col, val_to_test, puzzle):
+
+        # Checking row
+        for i, tile in enumerate(puzzle[row]):
+            if tile == val_to_test and col != i:
+                return False
+
+        # Checking col
+        for i in range(len(puzzle)):
+            if puzzle[i][col] == val_to_test and row != i:
+                return False
+
+        # Checking boxes
+        box_spot_x = col // 3  # This will either give you a 0, 1 or 2
+        box_spot_y = row // 3
+        start_y = box_spot_y * 3  # This gets us the *starting* index from the given box spot
+        end_y = start_y + 3  # This gets us the specific index belonging to the column
+        start_x = box_spot_x * 3
+        end_x = start_x + 3
+
+        for r in range(start_y, end_y):
+            for c in range(start_x, end_x):
+                if puzzle[r][c] == val_to_test and (r, c) != (row, col):
+                    return False
+
+        return True
+
+    def _get_tile_position(self, puzzle):
+
+        empty_tile = 0
+        try:
+            for row_pos, row in enumerate(puzzle):
+                for col_pos, tile in enumerate(row):
+                    if tile == empty_tile:
+                        return row_pos, col_pos
+        except RecursionError as re:
+            print(f"Recursive error while iterating through:\n{puzzle}")
+            raise RecursionError("STOP")
+
+        return None
+
+    def print_board_organized(self, puzzle):
+
+        organized = ""
+        for row in puzzle:
+            organized += f"\n{row}"
+        return organized
+
+    def get_puzzle_as_2d_array(self, puzzle):
+
+        new_board = []
+        row = []
+        position = 0
+        for tile in puzzle:
+            if position == 9:
+                new_board.append(copy.copy(row))
+                row.clear()
+                position = 0
+            if str(tile).isdigit():
+                row.append(int(tile))
+                position += 1
+
+        return new_board
+
+
+
+
 
 
 """
