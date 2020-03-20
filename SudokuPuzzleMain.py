@@ -1,6 +1,5 @@
 import SudokuPuzzleSolver
 import time
-import timeit
 
 if __name__ == '__main__':
 
@@ -14,20 +13,21 @@ if __name__ == '__main__':
 
         puzzle = puzzleinterface.read_puzzle_from_file(file)
         puzzle = puzzleinterface.get_puzzle_as_2d_array(puzzle)
+        difficulty = puzzleinterface.get_csci4463_puzzle_difficulty(file)
+        print(f"Solving puzzle {index+1}/{len(all_puzzle_files)} | Difficulty: {difficulty} {puzzleinterface.print_board_organized(puzzle)}")
 
-        print(f"Solving puzzle {index+1}/{len(all_puzzle_files)}:{puzzleinterface.print_board_organized(puzzle)}")
-
-        elapsed = time.perf_counter()
+        before = time.perf_counter()
         solved = puzzleinterface.solve_puzzle_with_backtracking(puzzle)
+        after = time.perf_counter()
 
         if solved:
             solved_counter += 1
-            print(f"\nSolved puzzle {index+1}/{len(all_puzzle_files)} (elapsed time: {elapsed} seconds):{solved}\n")
+            print(f"\nSolved puzzle {index+1}/{len(all_puzzle_files)} (elapsed time: {round(after-before, 3)} seconds):{solved}\n")
         else:
-            pass
+            print(f"WARNING: Could not solve above puzzle {file}")
 
     if solved_counter == len(all_puzzle_files):
-        print(f"All {solved_counter} puzzles successfully solved! See above outputs.")
+        print(f"All {solved_counter} puzzles successfully solved in {round(time.perf_counter())} seconds! See above outputs.")
     else:
         print(f"{solved_counter}/{len(all_puzzle_files)} went unsolved. See above outputs.")
 

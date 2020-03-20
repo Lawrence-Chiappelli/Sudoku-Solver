@@ -2,7 +2,7 @@
 import os
 import warnings
 import copy
-
+import re
 
 class PuzzleInterface:
 
@@ -14,6 +14,23 @@ class PuzzleInterface:
 
     def get_a_csci4463_puzzle_file(self, index):
         return self.all_puzzle_files[index]
+
+    def get_csci4463_puzzle_difficulty(self, puzzlefile):
+
+        easy_puzzles = ["01", "02", "06", "10", "13"]
+        medium_puzzles = ["03", "04", "07", "11", "14"]
+        hard_puzzles = ["05", "08", "09", "12", "15", "16"]
+
+        file_difficulty = re.search(r'\d+', puzzlefile).group(0)
+        if file_difficulty in easy_puzzles:
+            return "Easy"
+        elif file_difficulty in medium_puzzles:
+            return "Medium"
+        elif file_difficulty in hard_puzzles:
+            return "Hard"
+        else:
+            warnings.warn("Unable to detect each file's difficulty based on the current working environment.", Warning)
+            return "N/A - Could not determine difficulty"
 
     def read_puzzle_from_file(self, file):
         try:
@@ -41,12 +58,20 @@ class PuzzleInterface:
                 if self.solve_puzzle_with_backtracking(puzzle):
                     return self.print_board_organized(puzzle)
 
-                # Here, reset the tile to 0 (backtrack) if the given solutions do not work
+                # Here, *RESET* the tile to 0 if the given solutions do not work. This is backtracking.
                 puzzle[row_pos][col_pos] = 0
 
         return False
 
     def _check_newval_validity(self, row, col, val_to_test, puzzle):
+
+        """
+        :param row: the row index
+        :param col: the column index
+        :param val_to_test: the value to check and place in the puzzle
+        :param puzzle: the puzzle in question
+        :return: if the value val_to_test works in the given row/column position/indexes
+        """
 
         # Checking row
         for i, tile in enumerate(puzzle[row]):
@@ -61,13 +86,20 @@ class PuzzleInterface:
         # Checking boxes
         box_spot_x = col // 3  # This will either give you a 0, 1 or 2
         box_spot_y = row // 3
-        start_y = box_spot_y * 3  # This gets us the *starting* index from the given box spot
-        end_y = start_y + 3  # This gets us the specific index belonging to the column
-        start_x = box_spot_x * 3
-        end_x = start_x + 3
 
-        for r in range(start_y, end_y):
-            for c in range(start_x, end_x):
+        """
+        Note that we need just the boxes positions. 
+        Tile positions WITHIN THE BOX are determined below.
+        """
+
+        # Grabbing the start and end ranges
+        row_start = box_spot_y * 3  # This gets us the *starting* index from the given box spot
+        row_end = row_start + 3  # This gets us the specific index belonging to the column
+        col_start = box_spot_x * 3
+        col_end = col_start + 3
+
+        for r in range(row_start, row_end):
+            for c in range(col_start, col_end):
                 if puzzle[r][c] == val_to_test and (r, c) != (row, col):
                     return False
 
@@ -82,8 +114,7 @@ class PuzzleInterface:
                     if tile == empty_tile:
                         return row_pos, col_pos
         except RecursionError as re:
-            print(f"Recursive error while iterating through:\n{puzzle}")
-            raise RecursionError("STOP")
+            print(f"Recursive error while iterating through:\n{re}\n{puzzle}")
 
         return None
 
