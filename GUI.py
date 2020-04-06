@@ -14,6 +14,10 @@ black = (0, 0, 0)
 blurple = (44, 47, 51)
 font_type, font_size = ('freesansbold.ttf', 40)
 
+text_clicked = "You clicked me!"
+text_hovering = "Hovering!"
+text_standby = "Click me!"
+
 
 class Button:
 
@@ -107,12 +111,14 @@ while running:
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             if button.is_over(mouse_position):
-                button.update_text("You clicked me!")
+                button.update_color(green)
+                button.update_text(text_clicked)
 
         if event.type == pygame.MOUSEMOTION:
             if button.is_over(mouse_position):
-                button.update_color(green)
-                button.update_text("Hovering!")
+                if button.text != text_clicked:
+                    button.update_color(blue)
+                    button.update_text(text_hovering)
             else:
                 button.update_color(red)
-                button.update_text("Click me!")
+                button.update_text(text_standby)
