@@ -11,12 +11,14 @@ red = (255, 0, 0)
 blue = (0, 0, 255)
 green = (0, 255, 0)
 black = (0, 0, 0)
-blurple = (44, 47, 51)
+grey_discord = (44, 47, 51)
 font_type, font_size = ('freesansbold.ttf', 40)
 
-text_clicked = "You clicked me!"
+text_clicked = "Clicked me!"
 text_hovering = "Hovering!"
-text_standby = "Click me!"
+
+text_standby = "Play"
+text_settings = "Settings"
 
 
 class Button:
@@ -34,7 +36,7 @@ class Button:
         Draws the button on the screen
         :param surface: the window/surface to draw on
         :param outline: outline color, if any
-         :param xcenter: center this button on the x-axis? No by default
+        :param xcenter: center this button on the x-axis? No by default
         """
         if xcenter:
             self.x = (surface.get_width() // 2) - (self.w // 2) - 4
@@ -89,12 +91,15 @@ def display_text(text):
 
 
 window = pygame.display.set_mode(resolution)
-window.fill(blurple)
+window.fill(grey_discord)
 pygame.display.set_caption(caption)
 display_text("Ultimate Suduoku Puzzles")
 
-button = Button("Click me!", red, resolution[0]//2, resolution[1]//2, 250, 100)
-button.draw(window, black, True)
+button_main = Button(text_standby, red, window.get_width() // 2, window.get_height() // 2, 250, 100)
+button_settings = Button(text_settings, grey_discord, window.get_width() // 2, (window.get_height() // 2) + 150, 250, 100)
+
+button_main.draw(window, black, True)
+button_settings.draw(window, black, True)
 
 # ---------------------+
 pygame.display.flip()  #
@@ -113,16 +118,29 @@ while running:
             pygame.quit()  # TODO: Some people recommend this. Necessary?
             quit()  # And why this?
 
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if button.is_over(mouse_position):
-                button.update_color(green)
-                button.update_text(text_clicked)
+        if event.type == pygame.MOUSEBUTTONDOWN:  # MouseButtonDown
 
-        if event.type == pygame.MOUSEMOTION:
-            if button.is_over(mouse_position):
-                if button.text != text_clicked:
-                    button.update_color(blue)
-                    button.update_text(text_hovering)
+            if button_main.is_over(mouse_position):
+                if button_main.text == text_standby:
+                    button_main.update_color(blue)
+                    button_main.update_text(text_clicked)
+
+            if button_settings.is_over(mouse_position):
+                if button_settings.text == text_settings:
+                    button_settings.update_color(blue)
+                    button_settings.update_text(text_clicked)
+
+        if event.type == pygame.MOUSEMOTION:  # MouseMotion
+            if button_main.is_over(mouse_position):
+                if button_main.text == text_standby:
+                    button_main.update_color(green)
             else:
-                button.update_color(red)
-                button.update_text(text_standby)
+                button_main.update_color(red)
+                button_main.update_text(text_standby)
+                
+            if button_settings.is_over(mouse_position):
+                if button_settings.text == text_settings:
+                    button_settings.update_color(green)
+            else:
+                button_settings.update_color(red)
+                button_settings.update_text(text_settings)

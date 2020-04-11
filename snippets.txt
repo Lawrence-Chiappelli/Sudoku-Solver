@@ -1,0 +1,23 @@
+if outline:
+        if center_x:
+            x = (surface.get_width() // 2) - (self.w // 2) - 4
+        else:
+            x = self.x-4
+
+        if center_y:
+            y = (surface.get_height() // 2) - (self.h // 2) - 4
+        else:
+            y = self.y - 4
+
+        w = self.w+8
+        h = self.h+8
+        pygame.draw.rect(surface, outline, (x, y, w, h), 0)
+
+if center_x:
+        x = (surface.get_width() // 2) - (self.w // 2)
+    else:
+        x = self.x
+    if center_y:
+        y = (surface.get_height() // 2) - (self.h // 2)
+    else:
+        y = self.y
