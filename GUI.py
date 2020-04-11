@@ -29,28 +29,30 @@ class Button:
         self.w = width
         self.h = height
 
-    def draw(self, surface, outline=None):
+    def draw(self, surface, outline=None, xcenter=False):
         """
         Draws the button on the screen
         :param surface: the window/surface to draw on
         :param outline: outline color, if any
+         :param xcenter: center this button on the x-axis? No by default
         """
-        center_x = (surface.get_width() // 2) - (self.w // 2) - 4
+        if xcenter:
+            self.x = (surface.get_width() // 2) - (self.w // 2) - 4
 
         if outline:
             # x = self.x-4
-            x = center_x
+            x = self.x-4
             y = self.y-4
             w = self.w+8
             h = self.h+8
             pygame.draw.rect(surface, outline, (x, y, w, h), 0)
 
-        pygame.draw.rect(surface, self.color, (center_x, self.y, self.w, self.h), 0)
+        pygame.draw.rect(surface, self.color, (self.x, self.y, self.w, self.h), 0)
 
         if self.text != '':
             font = pygame.font.SysFont('comicsans', 60)
             text = font.render(self.text, 1, white)
-            center = (center_x + (self.w//2 - text.get_width()//2), self.y + (self.h//2 - text.get_height()//2))
+            center = (self.x + (self.w//2 - text.get_width()//2), self.y + (self.h//2 - text.get_height()//2))
             surface.blit(text, center)
 
         # -----------------------+
@@ -92,7 +94,7 @@ pygame.display.set_caption(caption)
 display_text("Ultimate Suduoku Puzzles")
 
 button = Button("Click me!", red, resolution[0]//2, resolution[1]//2, 250, 100)
-button.draw(window, black)
+button.draw(window, black, True)
 
 # ---------------------+
 pygame.display.flip()  #
