@@ -35,20 +35,22 @@ class Button:
         :param surface: the window/surface to draw on
         :param outline: outline color, if any
         """
+        center_x = (surface.get_width() // 2) - (self.w // 2) - 4
 
         if outline:
-            x = self.x-4
+            # x = self.x-4
+            x = center_x
             y = self.y-4
             w = self.w+8
             h = self.h+8
             pygame.draw.rect(surface, outline, (x, y, w, h), 0)
 
-        pygame.draw.rect(surface, self.color, (self.x, self.y, self.w, self.h), 0)
+        pygame.draw.rect(surface, self.color, (center_x, self.y, self.w, self.h), 0)
 
         if self.text != '':
             font = pygame.font.SysFont('comicsans', 60)
             text = font.render(self.text, 1, white)
-            center = (self.x + (self.w//2 - text.get_width()//2), self.y + (self.h//2 - text.get_height()//2))
+            center = (center_x + (self.w//2 - text.get_width()//2), self.y + (self.h//2 - text.get_height()//2))
             surface.blit(text, center)
 
         # -----------------------+
