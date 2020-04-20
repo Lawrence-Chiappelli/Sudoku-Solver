@@ -1,4 +1,5 @@
 import pygame
+from ButtonTxtRsc import TextResources
 
 # -------------+
 pygame.init()  #
@@ -14,11 +15,13 @@ black = (0, 0, 0)
 grey_discord = (44, 47, 51)
 font_type, font_size = ('freesansbold.ttf', 40)
 
-text_clicked = "Clicked me!"
-text_hovering = "Hovering!"
 
-text_standby = "Play"
-text_settings = "Settings"
+class Menu:
+
+    def __init__(self):
+        self.main_menu = True
+        self.settings = False
+        self.game = False
 
 
 class Button:
@@ -94,12 +97,15 @@ window = pygame.display.set_mode(resolution)
 window.fill(grey_discord)
 pygame.display.set_caption(caption)
 display_text("Ultimate Suduoku Puzzles")
+txt_rsrcs = TextResources()
 
-button_main = Button(text_standby, red, window.get_width() // 2, window.get_height() // 2, 250, 100)
-button_settings = Button(text_settings, grey_discord, window.get_width() // 2, (window.get_height() // 2) + 150, 250, 100)
-
+button_main = Button(txt_rsrcs.play, red, window.get_width() // 2, window.get_height() // 2, 250, 100)
 button_main.draw(window, black, True)
+button_settings = Button(txt_rsrcs.settings, grey_discord, window.get_width() // 2, (window.get_height() // 2) + 150, 250, 100)
 button_settings.draw(window, black, True)
+
+current_menu = Menu()
+
 
 # ---------------------+
 pygame.display.flip()  #
@@ -118,29 +124,36 @@ while running:
             pygame.quit()  # TODO: Some people recommend this. Necessary?
             quit()  # And why this?
 
-        if event.type == pygame.MOUSEBUTTONDOWN:  # MouseButtonDown
+        if current_menu.main_menu:
+            if event.type == pygame.MOUSEBUTTONDOWN:  # MouseButtonDown
 
-            if button_main.is_over(mouse_position):
-                if button_main.text == text_standby:
-                    button_main.update_color(blue)
-                    button_main.update_text(text_clicked)
+                if button_main.is_over(mouse_position):
+                    if button_main.text == txt_rsrcs.play:
+                        window.fill(grey_discord)
+                        pygame.display.flip()
+                        current_menu.main_menu = False
+                        current_menu.game = True
 
-            if button_settings.is_over(mouse_position):
-                if button_settings.text == text_settings:
-                    button_settings.update_color(blue)
-                    button_settings.update_text(text_clicked)
+                if button_settings.is_over(mouse_position):
+                    if button_settings.text == txt_rsrcs.settings:
+                        button_settings.update_color(blue)
+                        button_settings.update_text(txt_rsrcs.clicked)
 
-        if event.type == pygame.MOUSEMOTION:  # MouseMotion
-            if button_main.is_over(mouse_position):
-                if button_main.text == text_standby:
-                    button_main.update_color(green)
-            else:
-                button_main.update_color(red)
-                button_main.update_text(text_standby)
-                
-            if button_settings.is_over(mouse_position):
-                if button_settings.text == text_settings:
-                    button_settings.update_color(green)
-            else:
-                button_settings.update_color(red)
-                button_settings.update_text(text_settings)
+            if event.type == pygame.MOUSEMOTION:  # MouseMotion
+                if button_main.is_over(mouse_position):
+                    if button_main.text == txt_rsrcs.play:
+                        button_main.update_color(green)
+                else:
+                    button_main.update_color(red)
+                    button_main.update_text(txt_rsrcs.play)
+
+                if button_settings.is_over(mouse_position):
+                    if button_settings.text == txt_rsrcs.settings:
+                        button_settings.update_color(green)
+                else:
+                    button_settings.update_color(red)
+                    button_settings.update_text(txt_rsrcs.settings)
+        elif current_menu.settings:
+            print(f"Went to settings!")
+        elif current_menu.game:
+            print(f"Went to game!")
