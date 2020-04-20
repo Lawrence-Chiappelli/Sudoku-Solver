@@ -19,9 +19,77 @@ font_type, font_size = ('freesansbold.ttf', 40)
 class Menu:
 
     def __init__(self):
-        self.main_menu = True
-        self.settings = False
-        self.game = False
+        self.is_main_menu = True
+        self.is_settings_menu = False
+        self.is_game_screen = False
+
+    def draw_main_menu(self):
+
+        # MouseMotion events
+        if event.type == pygame.MOUSEMOTION:
+            if button_main.is_over(mouse_position):
+                if button_main.text == txt_rsrcs.play:
+                    button_main.update_color(green)
+            else:
+                button_main.update_color(red)
+                button_main.update_text(txt_rsrcs.play)
+
+            if button_settings.is_over(mouse_position):
+                if button_settings.text == txt_rsrcs.settings:
+                    button_settings.update_color(green)
+            else:
+                button_settings.update_color(red)
+                button_settings.update_text(txt_rsrcs.settings)
+
+        # MouseButtonDown events - load game screens here
+        if event.type == pygame.MOUSEBUTTONDOWN:
+
+            if button_main.is_over(mouse_position):
+                self._load_game_menu()
+
+            if button_settings.is_over(mouse_position):
+                self._load_settings_menu()
+
+    def draw_settings_menu(self):
+        pass
+
+    def draw_game_screen(self):
+        tile1 = Button("", grey_discord, 10, 0, 80, 80)
+        tile2 = Button("", grey_discord, tile1.x+85, 0, 80, 80)
+        tile3 = Button("", grey_discord, tile2.x+85, 0, 80, 80)
+        tile4 = Button("", grey_discord, tile3.x+85, 0, 80, 80)
+        tile5 = Button("", grey_discord, tile4.x+85, 0, 80, 80)
+        tile6 = Button("", grey_discord, tile5.x+85, 0, 80, 80)
+        tile7 = Button("", grey_discord, tile6.x+85, 0, 80, 80)
+        tile8 = Button("", grey_discord, tile7.x+85, 0, 80, 80)
+        tile9 = Button("", grey_discord, tile8.x+85, 0, 80, 80)
+        tile1.draw(window)
+        tile2.draw(window)
+        tile3.draw(window)
+        tile4.draw(window)
+        tile5.draw(window)
+        tile6.draw(window)
+        tile7.draw(window)
+        tile8.draw(window)
+        tile9.draw(window)
+
+
+    def _load_main_menu(self):
+        pass
+
+    def _load_settings_menu(self):
+        self.is_main_menu = False
+        self.is_settings_menu = True
+        self.is_game_screen = False
+        button_settings.update_color(blue)
+        button_settings.update_text(txt_rsrcs.clicked)
+
+    def _load_game_menu(self):
+        self.is_main_menu = False
+        self.is_settings_menu = False
+        self.is_game_screen = True
+        window.fill(white)
+        pygame.display.flip()
 
 
 class Button:
@@ -104,7 +172,7 @@ button_main.draw(window, black, True)
 button_settings = Button(txt_rsrcs.settings, grey_discord, window.get_width() // 2, (window.get_height() // 2) + 150, 250, 100)
 button_settings.draw(window, black, True)
 
-current_menu = Menu()
+menu = Menu()
 
 
 # ---------------------+
@@ -124,36 +192,14 @@ while running:
             pygame.quit()  # TODO: Some people recommend this. Necessary?
             quit()  # And why this?
 
-        if current_menu.main_menu:
-            if event.type == pygame.MOUSEBUTTONDOWN:  # MouseButtonDown
+        if menu.is_main_menu:
+            menu.draw_main_menu()
+        elif menu.is_game_screen:
+            menu.draw_game_screen()
+        elif menu.is_settings_menu:
+            menu.draw_settings_menu()
+        else:
+            running = False
+            pygame.quit()
+            quit()
 
-                if button_main.is_over(mouse_position):
-                    if button_main.text == txt_rsrcs.play:
-                        window.fill(grey_discord)
-                        pygame.display.flip()
-                        current_menu.main_menu = False
-                        current_menu.game = True
-
-                if button_settings.is_over(mouse_position):
-                    if button_settings.text == txt_rsrcs.settings:
-                        button_settings.update_color(blue)
-                        button_settings.update_text(txt_rsrcs.clicked)
-
-            if event.type == pygame.MOUSEMOTION:  # MouseMotion
-                if button_main.is_over(mouse_position):
-                    if button_main.text == txt_rsrcs.play:
-                        button_main.update_color(green)
-                else:
-                    button_main.update_color(red)
-                    button_main.update_text(txt_rsrcs.play)
-
-                if button_settings.is_over(mouse_position):
-                    if button_settings.text == txt_rsrcs.settings:
-                        button_settings.update_color(green)
-                else:
-                    button_settings.update_color(red)
-                    button_settings.update_text(txt_rsrcs.settings)
-        elif current_menu.settings:
-            print(f"Went to settings!")
-        elif current_menu.game:
-            print(f"Went to game!")
