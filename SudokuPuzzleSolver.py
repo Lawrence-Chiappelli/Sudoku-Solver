@@ -4,6 +4,7 @@ import warnings
 import copy
 import re
 
+
 class PuzzleInterface:
 
     def __init__(self):

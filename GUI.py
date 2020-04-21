@@ -1,4 +1,5 @@
 import pygame
+from SudokuPuzzleSolver import PuzzleInterface
 from ButtonTxtRsc import TextResources
 
 # -------------+
@@ -14,6 +15,46 @@ green = (0, 255, 0)
 black = (0, 0, 0)
 grey_discord = (44, 47, 51)
 font_type, font_size = ('freesansbold.ttf', 40)
+
+
+class Board:
+
+    def __init__(self):
+        self.row_len = 9
+        self.col_len = 9
+        self.grid = None
+
+        self.puzzle = None
+        self.puzzle_file = None
+        self.puzzle_difficulty = None
+
+    def initialize_board(self):
+
+        if self.grid is None:
+            self.grid = self._create_empty_grid()
+            print(f"Empty board created: {self.grid}")
+
+        self.puzzle_file = puzzle_interface.get_a_csci4463_puzzle_file(0)
+        self.puzzle_difficulty = puzzle_interface.get_csci4463_puzzle_difficulty(self.puzzle_file)
+
+        puzzle = puzzle_interface.read_puzzle_from_file(self.puzzle_file)
+        self.puzzle = puzzle_interface.get_puzzle_as_2d_array(puzzle)
+
+        print(f"Puzzle: {puzzle}")
+
+    def _create_empty_grid(self):
+
+        import copy
+        board = []
+        row = []
+
+        while len(board) != self.row_len:
+            for pos in range(self.row_len):
+                row.append(0)
+            board.append(copy.copy(row))
+            row.clear()
+
+        return board
 
 
 class Menu:
@@ -54,25 +95,7 @@ class Menu:
         pass
 
     def draw_game_screen(self):
-        tile1 = Button("", grey_discord, 10, 0, 80, 80)
-        tile2 = Button("", grey_discord, tile1.x+85, 0, 80, 80)
-        tile3 = Button("", grey_discord, tile2.x+85, 0, 80, 80)
-        tile4 = Button("", grey_discord, tile3.x+85, 0, 80, 80)
-        tile5 = Button("", grey_discord, tile4.x+85, 0, 80, 80)
-        tile6 = Button("", grey_discord, tile5.x+85, 0, 80, 80)
-        tile7 = Button("", grey_discord, tile6.x+85, 0, 80, 80)
-        tile8 = Button("", grey_discord, tile7.x+85, 0, 80, 80)
-        tile9 = Button("", grey_discord, tile8.x+85, 0, 80, 80)
-        tile1.draw(window)
-        tile2.draw(window)
-        tile3.draw(window)
-        tile4.draw(window)
-        tile5.draw(window)
-        tile6.draw(window)
-        tile7.draw(window)
-        tile8.draw(window)
-        tile9.draw(window)
-
+        pass
 
     def _load_main_menu(self):
         pass
@@ -91,6 +114,9 @@ class Menu:
         window.fill(white)
         pygame.display.flip()
 
+        # ---------------------- +
+        grid.initialize_board()  #
+        # ---------------------- +
 
 class Button:
 
@@ -173,7 +199,8 @@ button_settings = Button(txt_rsrcs.settings, grey_discord, window.get_width() //
 button_settings.draw(window, black, True)
 
 menu = Menu()
-
+grid = Board()
+puzzle_interface = PuzzleInterface()
 
 # ---------------------+
 pygame.display.flip()  #
