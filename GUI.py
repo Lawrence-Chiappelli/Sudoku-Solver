@@ -53,12 +53,11 @@ class Board:
                 button.draw(window)
                 x = x + (margin+w)
                 if i % 3 == 0 and i != 0:
-                    col_x = x - w - (margin*2)
-                    col_y = y - h - (margin*2)
-                    column_vertical = Button("", black, col_x, y, margin, window.get_height())
-                    # column_horizontal = Button("", black, x, col_y, margin, window)
+                    x_or_y = x - w - (margin*2)  # Note: this works for x and y positions
+                    column_vertical = Button("", black, x_or_y, 0, margin, window.get_height())
+                    column_horizontal = Button("", black, 0, x_or_y, window.get_width(), margin)
                     column_vertical.draw(window)
-                    # column_horizontal.draw(window)
+                    column_horizontal.draw(window)
 
             y = y + (margin+h)
             x = 0
