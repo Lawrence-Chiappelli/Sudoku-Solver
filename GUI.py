@@ -30,37 +30,35 @@ class Board:
 
     def initialize_board(self):
 
-        if self.board is None:
-            self.board = self._create_empty_board()
-
         self.puzzle_file = puzzle_interface.get_a_csci4463_puzzle_file(0)
         self.puzzle_difficulty = puzzle_interface.get_csci4463_puzzle_difficulty(self.puzzle_file)
         self.puzzle = puzzle_interface.get_puzzle_as_2d_array(puzzle_interface.read_puzzle_from_file(self.puzzle_file))
-
-        if self.board != self.puzzle:
-            self.board = self.puzzle
+        self.board = self.puzzle
 
         margin = 5
         w = 80
         h = 80
         x = 0
         y = 0
-        for row in self.board:
-            for i, tile in enumerate(row):
+        for r, row in enumerate(self.board):
+            for t, tile in enumerate(row):
+                self.board[r][t] = (str(tile), x, y, w, h)
                 if int(tile) == 0:
                     tile = " "
                 button = Button(str(tile), grey_discord, x, y, w, h)
                 button.draw(window)
                 x = x + (margin+w)
-                if i % 3 == 0 and i != 0:
+                if r == 0 and t % 3 == 0 and t != 0:
                     x_or_y = x - w - (margin*2)  # Note: this works for x and y positions
                     column_vertical = Button("", black, x_or_y, 0, margin, window.get_height())
                     column_horizontal = Button("", black, 0, x_or_y, window.get_width(), margin)
                     column_vertical.draw(window)
                     column_horizontal.draw(window)
 
+            # Reset button positions
             y = y + (margin+h)
             x = 0
+        print(f"Board:\n{self.board}")
 
     def _create_empty_board(self):
 
