@@ -22,7 +22,7 @@ class Board:
     def __init__(self):
         self.row_len = 9
         self.col_len = 9
-        self.grid = None
+        self.board = None
 
         self.puzzle = None
         self.puzzle_file = None
@@ -30,19 +30,32 @@ class Board:
 
     def initialize_board(self):
 
-        if self.grid is None:
-            self.grid = self._create_empty_grid()
-            print(f"Empty board created: {self.grid}")
+        if self.board is None:
+            self.board = self._create_empty_board()
 
         self.puzzle_file = puzzle_interface.get_a_csci4463_puzzle_file(0)
         self.puzzle_difficulty = puzzle_interface.get_csci4463_puzzle_difficulty(self.puzzle_file)
+        self.puzzle = puzzle_interface.get_puzzle_as_2d_array(puzzle_interface.read_puzzle_from_file(self.puzzle_file))
 
-        puzzle = puzzle_interface.read_puzzle_from_file(self.puzzle_file)
-        self.puzzle = puzzle_interface.get_puzzle_as_2d_array(puzzle)
+        if self.board != self.puzzle:
+            self.board = self.puzzle
 
-        print(f"Puzzle: {puzzle}")
+        margin = 5
+        w = 80
+        h = 80
+        x = 0
+        y = 0
+        for row in self.board:
+            for i, tile in enumerate(row):
+                if int(tile) == 0:
+                    tile = " "
+                button = Button(str(tile), grey_discord, x, y, w, h)
+                button.draw(window)
+                x = x + (margin+w)
+            y = y + (margin+h)
+            x = 0
 
-    def _create_empty_grid(self):
+    def _create_empty_board(self):
 
         import copy
         board = []
@@ -117,6 +130,7 @@ class Menu:
         # ---------------------- +
         grid.initialize_board()  #
         # ---------------------- +
+
 
 class Button:
 
