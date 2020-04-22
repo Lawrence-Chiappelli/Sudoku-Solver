@@ -35,30 +35,12 @@ class Board:
         self.puzzle = puzzle_interface.get_puzzle_as_2d_array(puzzle_interface.read_puzzle_from_file(self.puzzle_file))
         self.board = self.puzzle
 
-        margin = 5
-        w = 80
-        h = 80
         x = 0
         y = 0
-        for r, row in enumerate(self.board):
-            for t, tile in enumerate(row):
-                self.board[r][t] = (str(tile), x, y, w, h)
-                if int(tile) == 0:
-                    tile = " "
-                button = Button(str(tile), grey_discord, x, y, w, h)
-                button.draw(window)
-                x = x + (margin+w)
-                if r == 0 and t % 3 == 0 and t != 0:
-                    x_or_y = x - w - (margin*2)  # Note: this works for x and y positions
-                    column_vertical = Button("", black, x_or_y, 0, margin, window.get_height())
-                    column_horizontal = Button("", black, 0, x_or_y, window.get_width(), margin)
-                    column_vertical.draw(window)
-                    column_horizontal.draw(window)
-
-            # Reset button positions
-            y = y + (margin+h)
-            x = 0
-        print(f"Board:\n{self.board}")
+        w = 80
+        h = 80
+        margin = 5
+        self._set_tile_properties(x, y, w, h, margin)
 
     def _create_empty_board(self):
 
@@ -73,6 +55,49 @@ class Board:
             row.clear()
 
         return board
+
+    def _set_tile_properties(self, x, y, w, h, margin):
+
+        """
+        :param x: X position of first tile (0 is recommended)
+        :param y: Y position of first tile (also recommend 0)
+        Note: X and Y positions are automatically adjusted
+        :param w: Width size of individual tile
+        :param h: Height size of individual tile
+        :param margin: Space between tiles
+        :return:
+        """
+
+        for r, row in enumerate(self.board):
+            for t, tile in enumerate(row):
+
+                # Cast tile to tuple of critical button information
+                self.board[r][t] = (str(tile), x, y, w, h)
+
+                # Show no button text if value is 0
+                if int(tile) == 0:
+                    tile = " "
+
+                # Create & draw a button on each loop
+                button = Button(str(tile), grey_discord, x, y, w, h)  # 2)
+                button.draw(window)
+
+                # Offset the next tile position using the following guessed formula:
+                x = x + (margin+w)
+
+                # Create 2 horizontal and vertical line dividers:
+                # 1 - We only need one iteration of lines (it's in this loop for easy access to info)
+                # 2 - It's a multiple of 3 (except for 0)
+                if (r == 0) and (t % 3 == 0 and t != 0):
+                    position = x - w - (margin*2)  # Note: I don't know why this works for both x and y
+                    column_vertical = Button("", black, position, 0, margin, window.get_height())
+                    column_horizontal = Button("", black, 0, position, window.get_width(), margin)
+                    column_vertical.draw(window)
+                    column_horizontal.draw(window)
+
+            # Reset x and y positions when we reach a new row
+            y = y + (margin+h)
+            x = 0
 
 
 class Menu:
@@ -132,9 +157,9 @@ class Menu:
         window.fill(white)
         pygame.display.flip()
 
-        # ---------------------- +
+        # -----------------------+
         grid.initialize_board()  #
-        # ---------------------- +
+        # -----------------------+
 
 
 class Button:
