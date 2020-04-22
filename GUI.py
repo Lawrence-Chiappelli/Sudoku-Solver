@@ -52,6 +52,14 @@ class Board:
                 button = Button(str(tile), grey_discord, x, y, w, h)
                 button.draw(window)
                 x = x + (margin+w)
+                if i % 3 == 0 and i != 0:
+                    col_x = x - w - (margin*2)
+                    col_y = y - h - (margin*2)
+                    column_vertical = Button("", black, col_x, y, margin, window.get_height())
+                    # column_horizontal = Button("", black, x, col_y, margin, window)
+                    column_vertical.draw(window)
+                    # column_horizontal.draw(window)
+
             y = y + (margin+h)
             x = 0
 
