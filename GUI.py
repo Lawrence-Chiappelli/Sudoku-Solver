@@ -36,7 +36,24 @@ class Board:
         self._set_tile_properties(x, y, w, h, margin)
 
     def update_tile(self, button):
+
+        valid_numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+        index = self._index_selector(valid_numbers, button)
+        number = valid_numbers[index]
+
+        button.update_text(number)
         button.update_color(red)
+
+    def _index_selector(self, data_set, button):
+
+        if button.text == "" or button.text == " ":
+            return 0
+        else:
+            i = data_set.index(int(button.text)) + 1
+            if i >= len(data_set):
+                return 0
+            else:
+                return i
 
     def _create_empty_board(self):
 
@@ -232,6 +249,10 @@ class Button:
         self.draw(window, black)
 
     def update_text(self, text):
+
+        if type(text) != str:  # Useful if integers are passed through
+            text = str(text)
+
         self.text = text
         self.draw(window, black)
 
