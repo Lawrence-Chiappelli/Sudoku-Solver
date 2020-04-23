@@ -24,16 +24,9 @@ class Board:
         self.col_len = 9
         self.board = None
 
-        self.puzzle = None
-        self.puzzle_file = None
-        self.puzzle_difficulty = None
-
     def initialize_board(self):
 
-        self.puzzle_file = puzzle_interface.get_a_csci4463_puzzle_file(0)
-        self.puzzle_difficulty = puzzle_interface.get_csci4463_puzzle_difficulty(self.puzzle_file)
-        self.puzzle = puzzle_interface.get_puzzle_as_2d_array(puzzle_interface.read_puzzle_from_file(self.puzzle_file))
-        self.board = self.puzzle
+        self.board = self._choose_puzzle()
 
         x = 0
         y = 0
@@ -41,6 +34,10 @@ class Board:
         h = 80
         margin = 5
         self._set_tile_properties(x, y, w, h, margin)
+
+    def update_tile(self, button):
+        print(f"Updating tile with button: {button}")
+        button.update_color(red)
 
     def _create_empty_board(self):
 
@@ -55,6 +52,13 @@ class Board:
             row.clear()
 
         return board
+
+    def _choose_puzzle(self):
+        # TODO: Better puzzle selection
+        puzzle_file = puzzle_interface.get_a_csci4463_puzzle_file(0)
+        puzzle_difficulty = puzzle_interface.get_csci4463_puzzle_difficulty(puzzle_file)
+        puzzle = puzzle_interface.get_puzzle_as_2d_array(puzzle_interface.read_puzzle_from_file(puzzle_file))
+        return puzzle
 
     def _set_tile_properties(self, x, y, w, h, margin):
 
@@ -71,9 +75,6 @@ class Board:
         for r, row in enumerate(self.board):
             for t, tile in enumerate(row):
 
-                # Cast tile to tuple of critical button information
-                self.board[r][t] = (str(tile), x, y, w, h)
-
                 # Show no button text if value is 0
                 if int(tile) == 0:
                     tile = " "
@@ -81,6 +82,9 @@ class Board:
                 # Create & draw a button on each loop
                 button = Button(str(tile), grey_discord, x, y, w, h)  # 2)
                 button.draw(window)
+
+                # Replace individual board tile with tuple of critical information
+                self.board[r][t] = button
 
                 # Offset the next tile position using the following guessed formula:
                 x = x + (margin+w)
@@ -99,6 +103,14 @@ class Board:
             y = y + (margin+h)
             x = 0
 
+    def get_button_from_mouse_pos(self, mouse_pos):
+
+        for row in board.board:
+            for button in row:
+                if button.is_over(mouse_pos):
+                    return button
+        return button_main  # Temporary
+
 
 class Menu:
 
@@ -107,18 +119,18 @@ class Menu:
         self.is_settings_menu = False
         self.is_game_screen = False
 
-    def draw_main_menu(self):
+    def draw_main_menu(self, mouse_pos):
 
         # MouseMotion events
         if event.type == pygame.MOUSEMOTION:
-            if button_main.is_over(mouse_position):
+            if button_main.is_over(mouse_pos):
                 if button_main.text == txt_rsrcs.play:
                     button_main.update_color(green)
             else:
                 button_main.update_color(red)
                 button_main.update_text(txt_rsrcs.play)
 
-            if button_settings.is_over(mouse_position):
+            if button_settings.is_over(mouse_pos):
                 if button_settings.text == txt_rsrcs.settings:
                     button_settings.update_color(green)
             else:
@@ -128,17 +140,21 @@ class Menu:
         # MouseButtonDown events - load game screens here
         if event.type == pygame.MOUSEBUTTONDOWN:
 
-            if button_main.is_over(mouse_position):
+            if button_main.is_over(mouse_pos):
                 self._load_game_menu()
 
-            if button_settings.is_over(mouse_position):
+            if button_settings.is_over(mouse_pos):
                 self._load_settings_menu()
 
-    def draw_settings_menu(self):
+    def draw_settings_menu(self, mouse_pos):
         pass
 
-    def draw_game_screen(self):
-        pass
+    def draw_game_screen(self, mouse_pos):
+
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            button = board.get_button_from_mouse_pos(mouse_pos)
+            if button:
+                board.update_tile(button)
 
     def _load_main_menu(self):
         pass
@@ -158,7 +174,7 @@ class Menu:
         pygame.display.flip()
 
         # -----------------------+
-        grid.initialize_board()  #
+        board.initialize_board()  #
         # -----------------------+
 
 
@@ -243,7 +259,7 @@ button_settings = Button(txt_rsrcs.settings, grey_discord, window.get_width() //
 button_settings.draw(window, black, True)
 
 menu = Menu()
-grid = Board()
+board = Board()
 puzzle_interface = PuzzleInterface()
 
 # ---------------------+
@@ -256,7 +272,9 @@ while running:
 
     for event in pygame.event.get():
 
-        mouse_position = pygame.mouse.get_pos()
+        # ---------------------------------------+
+        mouse_position = pygame.mouse.get_pos()  #
+        # ---------------------------------------+
 
         if event.type == pygame.QUIT:
             running = False
@@ -264,11 +282,11 @@ while running:
             quit()  # And why this?
 
         if menu.is_main_menu:
-            menu.draw_main_menu()
+            menu.draw_main_menu(mouse_position)
         elif menu.is_game_screen:
-            menu.draw_game_screen()
+            menu.draw_game_screen(mouse_position)
         elif menu.is_settings_menu:
-            menu.draw_settings_menu()
+            menu.draw_settings_menu(mouse_position)
         else:
             running = False
             pygame.quit()
