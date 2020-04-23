@@ -14,6 +14,9 @@ blue = (0, 0, 255)
 green = (0, 255, 0)
 black = (0, 0, 0)
 grey_discord = (44, 47, 51)
+
+tile_default = (0, 102, 204)
+tile_selected = grey_discord
 font_type, font_size = ('freesansbold.ttf', 40)
 
 
@@ -28,11 +31,11 @@ class Board:
 
         self.board = self._choose_puzzle()
 
+        margin = 5
         x = 0
         y = 0
-        w = 80
-        h = 80
-        margin = 5
+        w = (window.get_width() // self.row_len) - (margin-2)
+        h = (window.get_height() // self.col_len) - (margin-2)
         self._set_tile_properties(x, y, w, h, margin)
 
     def update_tile(self, button):
@@ -40,9 +43,8 @@ class Board:
         valid_numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9]
         index = self._index_selector(valid_numbers, button)
         number = valid_numbers[index]
-
         button.update_text(number)
-        button.update_color(red)
+        button.update_color(tile_selected)
 
     def _index_selector(self, data_set, button):
 
@@ -96,8 +98,8 @@ class Board:
                     tile = " "
 
                 # Create & draw a button on each loop
-                button = Button(str(tile), grey_discord, x, y, w, h)  # 2)
-                button.draw(window)
+                button = Button(str(tile), tile_default, x, y, w, h)  # 2)
+                button.draw(window, black)
 
                 # Replace individual board tile with tuple of critical information
                 self.board[r][t] = button
@@ -110,8 +112,8 @@ class Board:
                 # 2 - It's a multiple of 3 (except for 0)
                 if (r == 0) and (t % 3 == 0 and t != 0):
                     position = x - w - (margin*2)  # Note: I don't know why this works for both x and y
-                    column_vertical = Button("", black, position, 0, margin, window.get_height())
-                    column_horizontal = Button("", black, 0, position, window.get_width(), margin)
+                    column_vertical = Button("", grey_discord, position, 0, margin, window.get_height())
+                    column_horizontal = Button("", grey_discord, 0, position, window.get_width(), margin)
                     column_vertical.draw(window)
                     column_horizontal.draw(window)
 
@@ -174,7 +176,10 @@ class Menu:
         if event.type == pygame.MOUSEBUTTONDOWN:
             button = board.get_button_from_mouse_pos(mouse_pos)
             if button:
-                board.update_tile(button)
+                if button.text == " " or button.text == "":
+                    board.update_tile(button)
+                elif button.color == tile_selected:
+                    board.update_tile(button)
 
     def _load_main_menu(self):
         pass
