@@ -36,7 +36,6 @@ class Board:
         self._set_tile_properties(x, y, w, h, margin)
 
     def update_tile(self, button):
-        print(f"Updating tile with button: {button}")
         button.update_color(red)
 
     def _create_empty_board(self):
@@ -109,7 +108,11 @@ class Board:
             for button in row:
                 if button.is_over(mouse_pos):
                     return button
-        return button_main  # Temporary
+
+    def __dir__(self):
+        for row in self.board:
+            for button in row:
+                print(button.text)
 
 
 class Menu:
