@@ -45,10 +45,19 @@ class PuzzleInterface:
 
     def solve_puzzle_with_backtracking(self, puzzle):
 
+        """
+
+        Make sure to convert the puzzle to a 2D array
+
+        :param puzzle:
+        :return: the puzzle
+        """
+
         empty_tile = self._get_tile_position(puzzle)
 
         if empty_tile is None:
-            return True
+            return puzzle
+            # return True
         else:
             row_pos, col_pos = empty_tile
 
@@ -57,7 +66,7 @@ class PuzzleInterface:
                 puzzle[row_pos][col_pos] = test_val
 
                 if self.solve_puzzle_with_backtracking(puzzle):
-                    return self.print_board_organized(puzzle)
+                    return self.format_board_organized(puzzle)
 
                 # Here, *RESET* the tile to 0 if the given solutions do not work. This is backtracking.
                 puzzle[row_pos][col_pos] = 0
@@ -119,7 +128,7 @@ class PuzzleInterface:
 
         return None
 
-    def print_board_organized(self, puzzle):
+    def format_board_organized(self, puzzle):
 
         organized = ""
         for row in puzzle:
