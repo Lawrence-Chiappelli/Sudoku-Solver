@@ -37,14 +37,13 @@ class PuzzleInterface:
         try:
             with open(f'CSCI4463SudokuPuzzles/{file}', 'r') as file_contents:
                 puzzle = file_contents.read()
-                return puzzle
+                return self.get_puzzle_as_2d_array(puzzle)
         except FileNotFoundError as fnfe:
             warnings.warn(f"Files were not found:\n{fnfe}\n\nLast check for files- searching root directory...", UserWarning)
             with open(file, 'r') as puzzle:
-                return puzzle
+                return self.get_puzzle_as_2d_array(puzzle)
 
     def solve_puzzle_with_backtracking(self, puzzle):
-
         """
 
         Make sure to convert the puzzle to a 2D array
@@ -66,7 +65,7 @@ class PuzzleInterface:
                 puzzle[row_pos][col_pos] = test_val
 
                 if self.solve_puzzle_with_backtracking(puzzle):
-                    return self.format_board_organized(puzzle)
+                    return self._format_board_automatically(puzzle)
 
                 # Here, *RESET* the tile to 0 if the given solutions do not work. This is backtracking.
                 puzzle[row_pos][col_pos] = 0
@@ -128,7 +127,34 @@ class PuzzleInterface:
 
         return None
 
-    def format_board_organized(self, puzzle):
+    def format_board_manually(self, puzzle):
+
+        """
+        :param puzzle: must contain PyGame button objects
+        :return: ultimately, the formatted board used to compare solution
+        """
+
+        user_board = []
+        for row in puzzle:
+            local_row = []
+            for button in row:
+                try:
+                    if button.text == " " or button.text == "":
+                        local_row.append(0)
+                    else:
+                        local_row.append(int(button.text))
+                except TypeError as te:
+                    raise TypeError(f"Wrong format for final conversion! The board being passed through must contain button objects. Traceback:\n{te}")
+            user_board.append(copy.copy(local_row))
+        user_board = self._format_board_automatically(user_board)
+        return user_board
+
+    def _format_board_automatically(self, puzzle):
+
+        """
+        :param puzzle:
+        :return: board rows *indented*
+        """
 
         organized = ""
         for row in puzzle:

@@ -14,7 +14,7 @@ if __name__ == '__main__':
         puzzle = puzzleinterface.read_puzzle_from_file(file)
         puzzle = puzzleinterface.get_puzzle_as_2d_array(puzzle)
         difficulty = puzzleinterface.get_csci4463_puzzle_difficulty(file)
-        print(f"Solving puzzle {index+1}/{len(all_puzzle_files)} | Difficulty: {difficulty} {puzzleinterface.format_board_organized(puzzle)}")
+        print(f"Solving puzzle {index+1}/{len(all_puzzle_files)} | Difficulty: {difficulty} {puzzleinterface._format_board_automatically(puzzle)}")
 
         before = time.perf_counter()
         solved = puzzleinterface.solve_puzzle_with_backtracking(puzzle)

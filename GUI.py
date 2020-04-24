@@ -30,18 +30,32 @@ class Board:
 
         self.puzzle_as_file = None
         self.difficulty = None
-        self.unsolved_puzzle = None
+        self.board_solved = None
 
     def initialize_board(self):
-
-        self.board = self._choose_puzzle()
 
         margin = 5
         x = 0
         y = 0
         w = (window.get_width() // self.row_len) - (margin-2)
         h = (window.get_height() // self.col_len) - (margin-2)
+
+        self._choose_puzzle()
         self._set_tile_properties(x, y, w, h, margin)
+
+    def validate_solution(self):
+
+        #  Return if board contains any 0s / is incomplete
+        for row in self.board:
+            for button in row:
+                if button.text == " " or button.text == "":
+                    return
+
+        self.board = puzzle_interface.format_board_manually(self.board)
+        if self.board == self.board_solved:
+            print(f"Puzzle solved!")
+        else:
+            print(f"Puzzle not solved!")
 
     def update_tile(self, button):
 
@@ -50,32 +64,6 @@ class Board:
         number = valid_numbers[index]
         button.update_text(number)
         button.update_color(tile_selected)
-
-    def validate_solution(self):
-
-        user_puzzle = ""
-        for row in self.board:
-            for button in row:
-                if button.text == " " or button.text == "":
-                    return
-                else:
-                    user_puzzle += button.text + " "
-            user_puzzle += "\n"
-
-        user_puzzle = puzzle_interface.get_puzzle_as_2d_array(user_puzzle)
-        user_puzzle_formatted = puzzle_interface.format_board_organized(user_puzzle)
-        string = ""
-        for row in user_puzzle_formatted:
-            string += row
-
-        og_puzzle = puzzle_interface.get_puzzle_as_2d_array(self.unsolved_puzzle)
-        og_puzzle_solved = puzzle_interface.solve_puzzle_with_backtracking(og_puzzle)
-
-        if string == og_puzzle_solved:
-            print(f"Puzzle solved!")
-        else:
-            print(f"Puzzle not solved!")
-            print(f"User:{string}\nvs Answer:\n{og_puzzle_solved}")
 
     def _index_selector(self, data_set, button):
 
@@ -90,6 +78,8 @@ class Board:
 
     def _create_empty_board(self):
 
+        # TODO: Keep?
+
         board = []
         row = []
 
@@ -103,11 +93,9 @@ class Board:
 
     def _choose_puzzle(self):
         self.puzzle_file = puzzle_interface.get_a_csci4463_puzzle_file(0)
-        self.unsolved_puzzle = puzzle_interface.read_puzzle_from_file(self.puzzle_file)
         self.difficulty = puzzle_interface.get_csci4463_puzzle_difficulty(self.puzzle_file)
-
-        puzzle = puzzle_interface.get_puzzle_as_2d_array(self.unsolved_puzzle)
-        return puzzle
+        self.board = puzzle_interface.read_puzzle_from_file(self.puzzle_file)
+        self.board_solved = puzzle_interface.solve_puzzle_with_backtracking(puzzle_interface.read_puzzle_from_file(self.puzzle_file))
 
     def _set_tile_properties(self, x, y, w, h, margin):
 
