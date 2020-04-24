@@ -1,4 +1,5 @@
 import pygame
+import copy
 from SudokuPuzzleSolver import PuzzleInterface
 from ButtonTxtRsc import TextResources
 
@@ -27,6 +28,10 @@ class Board:
         self.col_len = 9
         self.board = None
 
+        self.puzzle_as_file = None
+        self.difficulty = None
+        self.unsolved_puzzle = None
+
     def initialize_board(self):
 
         self.board = self._choose_puzzle()
@@ -46,6 +51,32 @@ class Board:
         button.update_text(number)
         button.update_color(tile_selected)
 
+    def validate_solution(self):
+
+        user_puzzle = ""
+        for row in self.board:
+            for button in row:
+                if button.text == " " or button.text == "":
+                    return
+                else:
+                    user_puzzle += button.text + " "
+            user_puzzle += "\n"
+
+        user_puzzle = puzzle_interface.get_puzzle_as_2d_array(user_puzzle)
+        user_puzzle_formatted = puzzle_interface.format_board_organized(user_puzzle)
+        string = ""
+        for row in user_puzzle_formatted:
+            string += row
+
+        og_puzzle = puzzle_interface.get_puzzle_as_2d_array(self.unsolved_puzzle)
+        og_puzzle_solved = puzzle_interface.solve_puzzle_with_backtracking(og_puzzle)
+
+        if string == og_puzzle_solved:
+            print(f"Puzzle solved!")
+        else:
+            print(f"Puzzle not solved!")
+            print(f"User:{string}\nvs Answer:\n{og_puzzle_solved}")
+
     def _index_selector(self, data_set, button):
 
         if button.text == "" or button.text == " ":
@@ -59,7 +90,6 @@ class Board:
 
     def _create_empty_board(self):
 
-        import copy
         board = []
         row = []
 
@@ -72,10 +102,11 @@ class Board:
         return board
 
     def _choose_puzzle(self):
-        # TODO: Better puzzle selection
-        puzzle_file = puzzle_interface.get_a_csci4463_puzzle_file(0)
-        puzzle_difficulty = puzzle_interface.get_csci4463_puzzle_difficulty(puzzle_file)
-        puzzle = puzzle_interface.get_puzzle_as_2d_array(puzzle_interface.read_puzzle_from_file(puzzle_file))
+        self.puzzle_file = puzzle_interface.get_a_csci4463_puzzle_file(0)
+        self.unsolved_puzzle = puzzle_interface.read_puzzle_from_file(self.puzzle_file)
+        self.difficulty = puzzle_interface.get_csci4463_puzzle_difficulty(self.puzzle_file)
+
+        puzzle = puzzle_interface.get_puzzle_as_2d_array(self.unsolved_puzzle)
         return puzzle
 
     def _set_tile_properties(self, x, y, w, h, margin):
@@ -90,6 +121,7 @@ class Board:
         :return:
         """
 
+        dividers = []  # It helps to draw the dividers after tiles are drawn
         for r, row in enumerate(self.board):
             for t, tile in enumerate(row):
 
@@ -99,7 +131,7 @@ class Board:
 
                 # Create & draw a button on each loop
                 button = Button(str(tile), tile_default, x, y, w, h)  # 2)
-                button.draw(window, black)
+                button.draw(window, grey_discord)
 
                 # Replace individual board tile with tuple of critical information
                 self.board[r][t] = button
@@ -112,14 +144,18 @@ class Board:
                 # 2 - It's a multiple of 3 (except for 0)
                 if (r == 0) and (t % 3 == 0 and t != 0):
                     position = x - w - (margin*2)  # Note: I don't know why this works for both x and y
-                    column_vertical = Button("", grey_discord, position, 0, margin, window.get_height())
-                    column_horizontal = Button("", grey_discord, 0, position, window.get_width(), margin)
-                    column_vertical.draw(window)
-                    column_horizontal.draw(window)
+                    column_vertical = Button("", black, position, 0, margin, window.get_height())
+                    column_horizontal = Button("", black, 0, position, window.get_width(), margin)
+                    dividers.append(column_vertical)
+                    dividers.append(column_horizontal)
 
             # Reset x and y positions when we reach a new row
             y = y + (margin+h)
             x = 0
+
+        # Finally, draw the dividers as a cosmetic
+        for divider in dividers:
+            divider.draw(window)
 
     def get_button_from_mouse_pos(self, mouse_pos):
 
@@ -180,6 +216,7 @@ class Menu:
                     board.update_tile(button)
                 elif button.color == tile_selected:
                     board.update_tile(button)
+            board.validate_solution()
 
     def _load_main_menu(self):
         pass
@@ -260,7 +297,6 @@ class Button:
 
         self.text = text
         self.draw(window, black)
-
 
 def text_objects(text, config):
     surface = config.render(text, True, white)
