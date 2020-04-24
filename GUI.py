@@ -2,23 +2,11 @@ import pygame
 import copy
 from SudokuPuzzleSolver import PuzzleInterface
 from ButtonTxtRsc import TextResources
+from ConfigFiles import configvideo, configcolor
 
 # -------------+
 pygame.init()  #
 # -------------+
-
-resolution = (800, 800)
-caption = "Sudoku Puzzle"
-white = (255, 255, 255)
-red = (255, 0, 0)
-blue = (0, 0, 255)
-green = (0, 255, 0)
-black = (0, 0, 0)
-grey_discord = (44, 47, 51)
-
-tile_default = (0, 102, 204)
-tile_selected = grey_discord
-font_type, font_size = ('freesansbold.ttf', 40)
 
 
 class Board:
@@ -63,7 +51,7 @@ class Board:
         index = self._index_selector(valid_numbers, button)
         number = valid_numbers[index]
         button.update_text(number)
-        button.update_color(tile_selected)
+        button.update_color(colors.tile_selected)
 
     def _index_selector(self, data_set, button):
 
@@ -118,8 +106,8 @@ class Board:
                     tile = " "
 
                 # Create & draw a button on each loop
-                button = Button(str(tile), tile_default, x, y, w, h)  # 2)
-                button.draw(window, grey_discord)
+                button = Button(str(tile), colors.tile_default, x, y, w, h)  # 2)
+                button.draw(window, colors.grey_discord)
 
                 # Replace individual board tile with tuple of critical information
                 self.board[r][t] = button
@@ -132,8 +120,8 @@ class Board:
                 # 2 - It's a multiple of 3 (except for 0)
                 if (r == 0) and (t % 3 == 0 and t != 0):
                     position = x - w - (margin*2)  # Note: I don't know why this works for both x and y
-                    column_vertical = Button("", black, position, 0, margin, window.get_height())
-                    column_horizontal = Button("", black, 0, position, window.get_width(), margin)
+                    column_vertical = Button("", colors.black, position, 0, margin, window.get_height())
+                    column_horizontal = Button("", colors.black, 0, position, window.get_width(), margin)
                     dividers.append(column_vertical)
                     dividers.append(column_horizontal)
 
@@ -171,16 +159,16 @@ class Menu:
         if event.type == pygame.MOUSEMOTION:
             if button_main.is_over(mouse_pos):
                 if button_main.text == txt_rsrcs.play:
-                    button_main.update_color(green)
+                    button_main.update_color(colors.green)
             else:
-                button_main.update_color(red)
+                button_main.update_color(colors.red)
                 button_main.update_text(txt_rsrcs.play)
 
             if button_settings.is_over(mouse_pos):
                 if button_settings.text == txt_rsrcs.settings:
-                    button_settings.update_color(green)
+                    button_settings.update_color(colors.green)
             else:
-                button_settings.update_color(red)
+                button_settings.update_color(colors.red)
                 button_settings.update_text(txt_rsrcs.settings)
 
         # MouseButtonDown events - load game screens here
@@ -202,7 +190,7 @@ class Menu:
             if button:
                 if button.text == " " or button.text == "":
                     board.update_tile(button)
-                elif button.color == tile_selected:
+                elif button.color == colors.tile_selected:
                     board.update_tile(button)
             board.validate_solution()
 
@@ -213,14 +201,14 @@ class Menu:
         self.is_main_menu = False
         self.is_settings_menu = True
         self.is_game_screen = False
-        button_settings.update_color(blue)
+        button_settings.update_color(colors.blue)
         button_settings.update_text(txt_rsrcs.clicked)
 
     def _load_game_menu(self):
         self.is_main_menu = False
         self.is_settings_menu = False
         self.is_game_screen = True
-        window.fill(white)
+        window.fill(colors.white)
         pygame.display.flip()
 
         # -----------------------+
@@ -260,7 +248,7 @@ class Button:
 
         if self.text != '':
             font = pygame.font.SysFont('comicsans', 60)
-            text = font.render(self.text, 1, white)
+            text = font.render(self.text, 1, colors.white)
             center = (self.x + (self.w//2 - text.get_width()//2), self.y + (self.h//2 - text.get_height()//2))
             surface.blit(text, center)
 
@@ -276,7 +264,7 @@ class Button:
 
     def update_color(self, color):
         self.color = color
-        self.draw(window, black)
+        self.draw(window, colors.black)
 
     def update_text(self, text):
 
@@ -284,36 +272,39 @@ class Button:
             text = str(text)
 
         self.text = text
-        self.draw(window, black)
+        self.draw(window, colors.black)
+
 
 def text_objects(text, config):
-    surface = config.render(text, True, white)
+    surface = config.render(text, True, colors.white)
     rectangle = surface.get_rect()
     return surface, rectangle
 
 
 def display_text(text):
-    font_size_config = pygame.font.Font(font_type, font_size)
+    font_size_config = pygame.font.Font(graphics.font_type, graphics.font_size)
     text_surface, text_rectangle = text_objects(text, font_size_config)
     text_rectangle.center = ((800//2), 100)
     window.blit(text_surface, text_rectangle)
     pygame.display.update()
 
 
-window = pygame.display.set_mode(resolution)
-window.fill(grey_discord)
-pygame.display.set_caption(caption)
-display_text("Ultimate Suduoku Puzzles")
-txt_rsrcs = TextResources()
-
-button_main = Button(txt_rsrcs.play, red, window.get_width() // 2, window.get_height() // 2, 250, 100)
-button_main.draw(window, black, True)
-button_settings = Button(txt_rsrcs.settings, grey_discord, window.get_width() // 2, (window.get_height() // 2) + 150, 250, 100)
-button_settings.draw(window, black, True)
-
+graphics = configvideo
+colors = configcolor
 menu = Menu()
 board = Board()
+txt_rsrcs = TextResources()
 puzzle_interface = PuzzleInterface()
+
+window = pygame.display.set_mode(graphics.resolution)
+window.fill(colors.grey_discord)
+pygame.display.set_caption(graphics.caption)
+display_text("Ultimate Suduoku Puzzles")
+
+button_main = Button(txt_rsrcs.play, colors.red, window.get_width() // 2, window.get_height() // 2, 250, 100)
+button_main.draw(window, colors.black, True)
+button_settings = Button(txt_rsrcs.settings, colors.grey_discord, window.get_width() // 2, (window.get_height() // 2) + 150, 250, 100)
+button_settings.draw(window, colors.black, True)
 
 # ---------------------+
 pygame.display.flip()  #
