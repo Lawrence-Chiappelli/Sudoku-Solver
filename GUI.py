@@ -14,22 +14,20 @@ class Board:
     def __init__(self):
         self.row_len = 9
         self.col_len = 9
-        self.board = None
+        self.margin = 5
 
+        self.board = None
+        self.board_solved = None
         self.puzzle_as_file = None
         self.difficulty = None
-        self.board_solved = None
 
     def initialize_board(self):
 
-        margin = 5
-        x = 0
-        y = 0
-        w = (window.get_width() // self.row_len) - (margin-2)
-        h = (window.get_height() // self.col_len) - (margin-2)
+        w = (window.get_width() // self.row_len) - (self.margin-2)
+        h = (window.get_height() // self.col_len) - (self.margin-2)
 
         self._choose_puzzle()
-        self._set_tile_properties(x, y, w, h, margin)
+        self._set_tile_properties(0, 0, w, h, self.margin)
 
     def validate_solution(self):
 
@@ -63,21 +61,6 @@ class Board:
                 return 0
             else:
                 return i
-
-    def _create_empty_board(self):
-
-        # TODO: Keep?
-
-        board = []
-        row = []
-
-        while len(board) != self.row_len:
-            for pos in range(self.row_len):
-                row.append(0)
-            board.append(copy.copy(row))
-            row.clear()
-
-        return board
 
     def _choose_puzzle(self):
         self.puzzle_file = puzzle_interface.get_a_csci4463_puzzle_file(0)
@@ -135,12 +118,17 @@ class Board:
 
     def get_button_from_mouse_pos(self, mouse_pos):
 
-        for row in board.board:
+        for row in self.board:
             for button in row:
                 if button.is_over(mouse_pos):
                     return button
 
     def __dir__(self):
+
+        """
+        :return: each individual button for debugging purposes
+        """
+
         for row in self.board:
             for button in row:
                 print(button.text)

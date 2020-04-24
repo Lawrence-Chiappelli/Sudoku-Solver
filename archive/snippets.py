@@ -25,3 +25,27 @@ def _check_newval_validity(row, col, val_to_test, puzzle):
             return False
 
     # This is about 10 seconds faster
+
+
+def _create_empty_board(self):
+
+    """
+    :param self: was originally used in Board class
+    :return: an empty board to be intialized
+
+    No longer needed if the board is going to be initialized with
+    an existing puzzle data set.
+
+    """
+
+    import copy
+    board = []
+    row = []
+
+    while len(board) != self.row_len:
+        for pos in range(self.row_len):
+            row.append(0)
+        board.append(copy.copy(row))
+        row.clear()
+
+    return board
