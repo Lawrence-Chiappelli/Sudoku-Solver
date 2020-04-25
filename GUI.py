@@ -22,11 +22,15 @@ class Board:
 
     def initialize_board(self):
 
-        w = (window.get_width() // self.row_len) - (self.margin-2)
-        h = (window.get_height() // self.col_len) - (self.margin-2)
+        offset = 8  # For micro-pixel adjustment- if full-screen is NOT desired
+        w = (window.get_width() // self.row_len) - (self.margin+offset)
+        h = (window.get_height() // self.col_len) - (self.margin+offset)
 
         self._choose_puzzle()
-        self._set_tile_properties(0, 0, w, h, self.margin)
+        self._set_tile_properties(0, 0, w, h)
+
+        h += offset
+        self._set_submenu_properties(0, 800-h, window.get_width(), h)
 
     def validate_solution(self):
 
@@ -68,7 +72,7 @@ class Board:
         self.board = puzzle_interface.read_puzzle_from_file(self.puzzle_file)
         self.board_solved = puzzle_interface.solve_puzzle_with_backtracking(puzzle_interface.read_puzzle_from_file(self.puzzle_file))
 
-    def _set_tile_properties(self, x, y, w, h, margin):
+    def _set_tile_properties(self, x, y, w, h):
 
         """
         :param x: X position of first tile (0 is recommended)
@@ -76,8 +80,7 @@ class Board:
         Note: X and Y positions are automatically adjusted
         :param w: Width size of individual tile
         :param h: Height size of individual tile
-        :param margin: Space between tiles
-        :return:
+        :return: properties of each tile
         """
 
         dividers = []  # It helps to draw the dividers after tiles are drawn
@@ -96,25 +99,29 @@ class Board:
                 self.board[r][t] = button
 
                 # Offset the next tile position using the following guessed formula:
-                x = x + (margin+w)
+                x = x + (self.margin+w)
 
                 # Create 2 horizontal and vertical line dividers:
                 # 1 - We only need one iteration of lines (it's in this loop for easy access to info)
                 # 2 - It's a multiple of 3 (except for 0)
                 if (r == 0) and (t % 3 == 0 and t != 0):
-                    position = x - w - (margin*2)  # Note: I don't know why this works for both x and y
-                    column_vertical = Button("", colors.grey_light, position, 0, margin, window.get_height())
-                    column_horizontal = Button("", colors.grey_light, 0, position, window.get_width(), margin)
+                    position = x - w - (self.margin*2)  # Note: I don't know why this works for both x and y
+                    column_vertical = Button("", colors.grey_light, position, 0, self.margin, window.get_height())
+                    column_horizontal = Button("", colors.grey_light, 0, position, window.get_width(), self.margin)
                     dividers.append(column_vertical)
                     dividers.append(column_horizontal)
 
             # Reset x and y positions when we reach a new row
-            y = y + (margin+h)
+            y = y + (self.margin+h)
             x = 0
 
         # Finally, draw the dividers as a cosmetic
         for divider in dividers:
             divider.draw(window)
+
+    def _set_submenu_properties(self, x, y, w, h):
+        button_submenu = Button("test", colors.green, x, y, w, h)
+        button_submenu.draw(window, None, True)
 
     def get_button_from_mouse_pos(self, mouse_pos):
 
