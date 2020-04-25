@@ -1,7 +1,10 @@
 import pygame
+import time
 from SudokuPuzzleSolver import PuzzleInterface
 from ButtonTxtRsc import TextResources
 from ConfigFiles import configvideo, configcolor
+
+before = time.perf_counter()
 
 # -------------+
 pygame.init()  #
@@ -19,6 +22,8 @@ class Board:
         self.board_solved = None
         self.puzzle_as_file = None
         self.difficulty = None
+
+        self.submenu = None
 
     def initialize_board(self):
 
@@ -120,8 +125,9 @@ class Board:
             divider.draw(window)
 
     def _set_submenu_properties(self, x, y, w, h):
-        button_submenu = Button("test", colors.green, x, y, w, h)
-        button_submenu.draw(window, None, True)
+
+        self.submenu = Button(f"", colors.submenu, x, y, w, h)
+        self.submenu.draw(window, None, True, 40)
 
     def get_button_from_mouse_pos(self, mouse_pos):
 
@@ -180,6 +186,9 @@ class Menu:
 
     def draw_game_screen(self, mouse_pos):
 
+        after = time.perf_counter()
+        board.submenu.update_text(f"Puzzle 1/{len(puzzle_interface.get_all_csci4463_puzzle_files())} | Difficulty: {board.difficulty} | Time elapsed: {round(after-before)}", 40)
+
         if event.type == pygame.MOUSEBUTTONDOWN:
             button = board.get_button_from_mouse_pos(mouse_pos)
             if button:
@@ -221,7 +230,7 @@ class Button:
         self.w = width
         self.h = height
 
-    def draw(self, surface, outline=None, xcenter=False):
+    def draw(self, surface, outline=None, xcenter=False, text_size=None):
         """
         Draws the button on the screen
         :param surface: the window/surface to draw on
@@ -242,7 +251,13 @@ class Button:
         pygame.draw.rect(surface, self.color, (self.x, self.y, self.w, self.h), 0)
 
         if self.text != '':
-            font = pygame.font.SysFont('comicsans', 60)
+
+            if text_size is None:
+                text_size = 60
+            else:
+                text_size = text_size
+
+            font = pygame.font.SysFont('comicsans', text_size)
             text = font.render(self.text, 1, colors.white)
             center = (self.x + (self.w//2 - text.get_width()//2), self.y + (self.h//2 - text.get_height()//2))
             surface.blit(text, center)
@@ -266,18 +281,15 @@ class Button:
         """
 
         self.color = color
-        if outline:
-            self.draw(window, outline)
-        else:
-            self.draw(window)
+        self.draw(window, outline)
 
-    def update_text(self, text):
+    def update_text(self, text, text_size=None):
 
         if type(text) != str:  # Useful if integers are passed through
             text = str(text)
 
         self.text = text
-        self.draw(window)
+        self.draw(window, None, False, text_size)
 
 
 def text_objects(text, config):
@@ -319,25 +331,25 @@ pygame.display.flip()  #
 running = True
 while running:
 
-    for event in pygame.event.get():
+    # ---------------------------------------+
+    mouse_position = pygame.mouse.get_pos()  #
+    # ---------------------------------------+
 
-        # ---------------------------------------+
-        mouse_position = pygame.mouse.get_pos()  #
-        # ---------------------------------------+
+    for event in pygame.event.get():
 
         if event.type == pygame.QUIT:
             running = False
             pygame.quit()  # TODO: Some people recommend this. Necessary?
             quit()  # And why this?
 
-        if menu.is_main_menu:
-            menu.draw_main_menu(mouse_position)
-        elif menu.is_game_screen:
-            menu.draw_game_screen(mouse_position)
-        elif menu.is_settings_menu:
-            menu.draw_settings_menu(mouse_position)
-        else:
-            running = False
-            pygame.quit()
-            quit()
+    if menu.is_main_menu:
+        menu.draw_main_menu(mouse_position)
+    elif menu.is_game_screen:
+        menu.draw_game_screen(mouse_position)
+    elif menu.is_settings_menu:
+        menu.draw_settings_menu(mouse_position)
+    else:
+        running = False
+        pygame.quit()
+        quit()
 
