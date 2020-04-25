@@ -16,6 +16,7 @@ class Board:
         self.row_len = 9
         self.col_len = 9
         self.margin = 5
+        self.bandaid = 1  # This is to fix buttons under or overdrawn by 1 pixel. Make it 0 to see why.
         self.puzzle_index = -1
 
         self.board = None
@@ -25,7 +26,8 @@ class Board:
         self.difficulty = None
 
         self.submenu = None
-        self.side_menu = None
+        self.button_next = None
+        self.button_previous = None
         self.elapsed_start = None
 
     def initialize_board(self):
@@ -41,8 +43,7 @@ class Board:
         self._set_submenu_properties(0, window.get_height()-h, window.get_width(), h)
 
         h -= offset
-        bandaid = 1  # This is just to fix the divider being overdrawn by 1 pixel. Remove it to see why.
-        self._set_sidemenu_properties(window.get_width()-w-self.margin+bandaid, 0, w, (h+self.margin) * self.col_len)
+        self._set_sidemenu_properties(window.get_width()-w-(self.margin+self.bandaid), 0, w, (h * 3) + (self.margin*2+self.bandaid))
         self.elapsed_start = time.perf_counter()
 
     def validate_solution(self):
@@ -145,17 +146,57 @@ class Board:
             divider.draw(window)
 
     def _set_submenu_properties(self, x, y, w, h):
-        self.submenu = Button(f"", colors.submenu, x, y, w, h)
-        self.submenu.draw(window, None, True, 40)
+        self.submenu = Button(f"", colors.submenu, x, y, w+self.margin+2, h)
+        self.submenu.draw(window, None, 40, True)
 
     def _set_sidemenu_properties(self, x, y, w, h):
-        self.side_menu = Button(f"Text.", colors.side_menu, x, y, w, h)
-        self.side_menu.draw(window, colors.black, False, 40)
+
+        """
+        :param x: recommended: window.get_width() + or - other calculations
+        :param y: recommended: 0
+        :param w: width of side menu
+        :param h: height of side menu
+        :return: individual button pieces being drawn
+        """
+
+        # TODO: These micro-pixel adjustments are probably
+        # going to break if the window is resized
+
+        w += self.bandaid+self.bandaid
+        h += self.bandaid+self.bandaid
+
+        button1 = Button(f"Puzzle:", colors.side_menu, x, y, w, h // 2)
+        button1.draw(window, None, 30, False)
+        button2 = Button(f"{self.puzzle_file}", colors.side_menu, x, (h // 2), w, h // 2)
+        button2.draw(window, None, 25, False)
+        button3 = Button(f"Best time:", colors.side_menu, x, h, w, (h+self.margin) // 2)
+        button3.draw(window, colors.black, 24, False)
+        button4 = Button(f"WIP", colors.side_menu, x, h + button3.h, w, (h + self.margin) // 2)
+        button4.draw(window, None, 24, False)
+        button5 = Button(f"Cycle", colors.submenu, x, h * 2 + 2, w, (h + self.margin) // 3)
+        button5.draw(window, colors.black, 24, False)
+
+        self.button_next = Button(f"-->", colors.submenu, x+self.margin, (h * 2 + 2) + w + (self.margin*3) + self.margin, w - (self.margin*2), ((h + self.margin) // 3) - (self.margin*6))
+        self.button_next.draw(window, colors.grey_discord, 24, False)
+
+        self.button_previous = Button(f"<--", colors.submenu, x+self.margin, (h * 2 + 2) + w * 2 + self.margin, w - (self.margin*2), ((h + self.margin) // 3) - (self.margin*6))
+        self.button_previous.draw(window, colors.grey_discord, 24, False)
 
     def update_submenu_text(self):
         if self.board_is_solved:
             return
         board.submenu.update_text(f"Puzzle {self.puzzle_index+1}/{len(puzzle_interface.get_all_csci4463_puzzle_files())} | Difficulty: {board.difficulty} | Time elapsed: {round(time.perf_counter()-self.elapsed_start)}", 40)
+
+    def update_submenu_buttons(self, mouse_pos):
+        if self.button_next.is_over(mouse_pos):
+            self.button_next.update_color(colors.tile_hovering)
+        else:
+            self.button_next.update_color(colors.submenu)
+
+        if self.button_previous.is_over(mouse_pos):
+            self.button_previous.update_color(colors.tile_hovering)
+        else:
+            self.button_previous.update_color(colors.submenu)
 
     def get_button_from_mouse_pos(self, mouse_pos):
 
@@ -258,12 +299,13 @@ class Button:
         self.w = width
         self.h = height
 
-    def draw(self, surface, outline=None, xcenter=False, text_size=None):
+    def draw(self, surface, outline=None, text_size=None, xcenter=False):
         """
         Draws the button on the screen
         :param surface: the window/surface to draw on
         :param outline: outline color, if any
-        :param xcenter: center this button on the x-axis? No by default
+        :param text_size: size of button text
+        :param xcenter: center this button on the x-axis? False by default
         """
         if xcenter:
             self.x = (surface.get_width() // 2) - (self.w // 2) - 4
@@ -317,7 +359,7 @@ class Button:
             text = str(text)
 
         self.text = text
-        self.draw(window, None, False, text_size)
+        self.draw(window, None, text_size, False)
 
 
 def text_objects(text, config):
@@ -347,9 +389,9 @@ pygame.display.set_caption(graphics.caption)
 display_text("Ultimate Suduoku Puzzles")
 
 button_main = Button(txt_rsrcs.play, colors.red, window.get_width() // 2, window.get_height() // 2, 250, 100)
-button_main.draw(window, colors.black, True)
+button_main.draw(window, colors.black, None, True)
 button_settings = Button(txt_rsrcs.settings, colors.grey_discord, window.get_width() // 2, (window.get_height() // 2) + 150, 250, 100)
-button_settings.draw(window, colors.black, True)
+button_settings.draw(window, colors.black, None, True)
 
 # ---------------------+
 pygame.display.flip()  #
@@ -383,4 +425,5 @@ while running:
 
     if menu.is_game_screen:
         board.update_submenu_text()
+        board.update_submenu_buttons(mouse_position)
 
