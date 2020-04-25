@@ -11,6 +11,7 @@ tile_default = (0, 102, 204)
 tile_selected = grey_discord
 tile_hovering = (102, 179, 255)
 tile_solved = (71, 209, 71)
+puzzle_solved = (0, 153, 51)
 
 submenu = (0, 92, 153)
 side_menu = (102, 102, 255)

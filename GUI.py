@@ -30,21 +30,25 @@ class Board:
         self.button_previous = None
         self.elapsed_start = None
 
-    def initialize_board(self):
+    def initialize_board(self, forward=True):
 
         offset = 8  # For micro-pixel adjustment- if full-screen is NOT desired
         w = (window.get_width() // self.row_len) - (self.margin+offset)
         h = (window.get_height() // self.col_len) - (self.margin+offset)
 
-        self._choose_puzzle()
-        self._set_tile_properties(0, 0, w, h)
+        direction_index = self._get_puzzle_direction(forward)
+        self.board = self._choose_puzzle(direction_index)
 
         h += offset
         self._set_submenu_properties(0, window.get_height()-h, window.get_width(), h)
 
         h -= offset
         self._set_sidemenu_properties(window.get_width()-w-(self.margin+self.bandaid), 0, w, (h * 3) + (self.margin*2+self.bandaid))
+
         self.elapsed_start = time.perf_counter()
+        # -------------------------------------+
+        self._set_tile_properties(0, 0, w, h)  #
+        # -------------------------------------+
 
     def validate_solution(self):
 
@@ -58,16 +62,9 @@ class Board:
         self.board = puzzle_interface.format_board_manually(self.board)
 
         if self.board == self.board_solved:
-            self._process_next_board(user_board_copy)
+            self._process_completed_board(user_board_copy)
         else:
             self.board = user_board_copy
-
-    def _process_next_board(self, board_to_update):
-
-        self.board_is_solved = True
-        for row in board_to_update:
-            for button in row:
-                button.update_color(colors.tile_solved)
 
     def update_tile(self, button):
 
@@ -75,12 +72,12 @@ class Board:
             return
 
         valid_numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-        index = self._index_selector(valid_numbers, button)
+        index = self._tile_number_index_selector(valid_numbers, button)
         number = valid_numbers[index]
         button.update_text(number)
         button.update_color(colors.tile_selected)
 
-    def _index_selector(self, data_set, button):
+    def _tile_number_index_selector(self, data_set, button):
 
         if button.text == "" or button.text == " ":
             return 0
@@ -91,12 +88,21 @@ class Board:
             else:
                 return i
 
-    def _choose_puzzle(self):
-        self.puzzle_index += 1
+    def _get_puzzle_direction(self, forward):
+        if forward:
+            if self.puzzle_index <= len(puzzle_interface.get_all_csci4463_puzzle_files()):
+                return 1
+        else:
+            if self.puzzle_index != 0:
+                return -1
+        return 0
+
+    def _choose_puzzle(self, direction):
+        self.puzzle_index += direction
         self.puzzle_file = puzzle_interface.get_a_csci4463_puzzle_file(self.puzzle_index)
         self.difficulty = puzzle_interface.get_csci4463_puzzle_difficulty(self.puzzle_file)
-        self.board = puzzle_interface.read_puzzle_from_file(self.puzzle_file)
         self.board_solved = puzzle_interface.solve_puzzle_with_backtracking(puzzle_interface.read_puzzle_from_file(self.puzzle_file))
+        return puzzle_interface.read_puzzle_from_file(self.puzzle_file)
 
     def _set_tile_properties(self, x, y, w, h):
 
@@ -146,8 +152,10 @@ class Board:
             divider.draw(window)
 
     def _set_submenu_properties(self, x, y, w, h):
+
         self.submenu = Button(f"", colors.submenu, x, y, w+self.margin+2, h)
-        self.submenu.draw(window, None, 40, True)
+        self.submenu.draw(window, None, None, True)
+        return None
 
     def _set_sidemenu_properties(self, x, y, w, h):
 
@@ -156,7 +164,7 @@ class Board:
         :param y: recommended: 0
         :param w: width of side menu
         :param h: height of side menu
-        :return: individual button pieces being drawn
+        :return: nothing, every side menu property is drawn here
         """
 
         # TODO: These micro-pixel adjustments are probably
@@ -181,18 +189,46 @@ class Board:
 
         self.button_previous = Button(f"<--", colors.submenu, x+self.margin, (h * 2 + 2) + w * 2 + self.margin, w - (self.margin*2), ((h + self.margin) // 3) - (self.margin*6))
         self.button_previous.draw(window, colors.grey_discord, 24, False)
+        return None
+
+    def _process_completed_board(self, board_to_update):
+
+        """
+        :param board_to_update: the board that's copied
+        :return: a formatted board to indicate completion
+
+        The player must click the cycle arrow
+        to start a new puzzle.
+        """
+
+        self.board_is_solved = True
+        for row in board_to_update:
+            for button in row:
+                button.update_color(colors.tile_solved)
+        self.submenu.update_color(colors.puzzle_solved)
+
+        time_completed = round(time.perf_counter()-self.elapsed_start)
+        self.submenu.update_text(f"PUZZLE SOLVED! | Time to complete: {time_completed} seconds", 40)
 
     def update_submenu_text(self):
         if self.board_is_solved:
             return
         board.submenu.update_text(f"Puzzle {self.puzzle_index+1}/{len(puzzle_interface.get_all_csci4463_puzzle_files())} | Difficulty: {board.difficulty} | Time elapsed: {round(time.perf_counter()-self.elapsed_start)}", 40)
 
-    def update_submenu_buttons(self, mouse_pos):
+    def update_side_menu_buttons(self, mouse_pos):
+
+        """
+        :param mouse_pos: mouse position of submenu button
+        :return: individual submenu behavior
+        """
+
+        # Next button
         if self.button_next.is_over(mouse_pos):
             self.button_next.update_color(colors.tile_hovering)
         else:
             self.button_next.update_color(colors.submenu)
 
+        # Previous button
         if self.button_previous.is_over(mouse_pos):
             self.button_previous.update_color(colors.tile_hovering)
         else:
@@ -259,13 +295,21 @@ class Menu:
             return
 
         if event.type == pygame.MOUSEBUTTONDOWN:
-            button = board.get_button_from_mouse_pos(mouse_pos)
-            if button:
-                if button.text == " " or button.text == "":
-                    board.update_tile(button)
-                elif button.color == colors.tile_selected:
-                    board.update_tile(button)
-            board.validate_solution()
+
+            if board.button_next.is_over(mouse_pos):
+                board.initialize_board()
+            elif board.button_previous.is_over(mouse_pos):
+                board.initialize_board(False)
+            else:
+                button = board.get_button_from_mouse_pos(mouse_pos)
+                if button:
+                    if button.text == " " or button.text == "":
+                        board.update_tile(button)
+                    elif button.color == colors.tile_selected:
+                        board.update_tile(button)
+                board.validate_solution()
+
+
 
     def _load_main_menu(self):
         pass
@@ -409,8 +453,8 @@ while running:
 
         if event.type == pygame.QUIT:
             running = False
-            pygame.quit()  # TODO: Some people recommend this. Necessary?
-            quit()  # And why this?
+            pygame.quit()
+            quit()
 
         if menu.is_main_menu:
             menu.draw_main_menu(mouse_position)
@@ -425,5 +469,5 @@ while running:
 
     if menu.is_game_screen:
         board.update_submenu_text()
-        board.update_submenu_buttons(mouse_position)
+        board.update_side_menu_buttons(mouse_position)
 
