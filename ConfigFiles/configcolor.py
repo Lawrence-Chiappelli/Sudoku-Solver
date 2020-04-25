@@ -9,4 +9,7 @@ grey_light = (179, 179, 179)
 
 tile_default = (0, 102, 204)
 tile_selected = grey_discord
+tile_solved = (71, 209, 71)
+
 submenu = (0, 92, 153)
+side_menu = (102, 102, 255)

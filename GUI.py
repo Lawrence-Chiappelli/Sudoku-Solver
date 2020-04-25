@@ -1,10 +1,9 @@
 import pygame
 import time
+import copy
 from SudokuPuzzleSolver import PuzzleInterface
 from ButtonTxtRsc import TextResources
 from ConfigFiles import configvideo, configcolor
-
-before = time.perf_counter()
 
 # -------------+
 pygame.init()  #
@@ -17,13 +16,17 @@ class Board:
         self.row_len = 9
         self.col_len = 9
         self.margin = 5
+        self.puzzle_index = -1
 
         self.board = None
         self.board_solved = None
+        self.board_is_solved = False
         self.puzzle_as_file = None
         self.difficulty = None
 
         self.submenu = None
+        self.side_menu = None
+        self.elapsed_start = None
 
     def initialize_board(self):
 
@@ -35,24 +38,40 @@ class Board:
         self._set_tile_properties(0, 0, w, h)
 
         h += offset
-        self._set_submenu_properties(0, 800-h, window.get_width(), h)
+        self._set_submenu_properties(0, window.get_height()-h, window.get_width(), h)
+
+        h -= offset
+        bandaid = 1  # This is just to fix the divider being overdrawn by 1 pixel. Remove it to see why.
+        self._set_sidemenu_properties(window.get_width()-w-self.margin+bandaid, 0, w, (h+self.margin) * self.col_len)
+        self.elapsed_start = time.perf_counter()
 
     def validate_solution(self):
 
-        #  Return if board contains any 0s / is incomplete
+        # Return if board contains any 0s / is incomplete
         for row in self.board:
             for button in row:
                 if button.text == " " or button.text == "":
                     return
 
+        user_board_copy = copy.copy(self.board)
         self.board = puzzle_interface.format_board_manually(self.board)
-        if self.board == self.board_solved:
-            self._indicate_solved_board()
 
-    def _indicate_solved_board(self):
-        pass
+        if self.board == self.board_solved:
+            self._process_next_board(user_board_copy)
+        else:
+            self.board = user_board_copy
+
+    def _process_next_board(self, board_to_update):
+
+        self.board_is_solved = True
+        for row in board_to_update:
+            for button in row:
+                button.update_color(colors.tile_solved)
 
     def update_tile(self, button):
+
+        if self.board_is_solved:
+            return
 
         valid_numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9]
         index = self._index_selector(valid_numbers, button)
@@ -72,7 +91,8 @@ class Board:
                 return i
 
     def _choose_puzzle(self):
-        self.puzzle_file = puzzle_interface.get_a_csci4463_puzzle_file(0)
+        self.puzzle_index += 1
+        self.puzzle_file = puzzle_interface.get_a_csci4463_puzzle_file(self.puzzle_index)
         self.difficulty = puzzle_interface.get_csci4463_puzzle_difficulty(self.puzzle_file)
         self.board = puzzle_interface.read_puzzle_from_file(self.puzzle_file)
         self.board_solved = puzzle_interface.solve_puzzle_with_backtracking(puzzle_interface.read_puzzle_from_file(self.puzzle_file))
@@ -125,9 +145,17 @@ class Board:
             divider.draw(window)
 
     def _set_submenu_properties(self, x, y, w, h):
-
         self.submenu = Button(f"", colors.submenu, x, y, w, h)
         self.submenu.draw(window, None, True, 40)
+
+    def _set_sidemenu_properties(self, x, y, w, h):
+        self.side_menu = Button(f"Text.", colors.side_menu, x, y, w, h)
+        self.side_menu.draw(window, colors.black, False, 40)
+
+    def update_submenu_text(self):
+        if self.board_is_solved:
+            return
+        board.submenu.update_text(f"Puzzle {self.puzzle_index+1}/{len(puzzle_interface.get_all_csci4463_puzzle_files())} | Difficulty: {board.difficulty} | Time elapsed: {round(time.perf_counter()-self.elapsed_start)}", 40)
 
     def get_button_from_mouse_pos(self, mouse_pos):
 
@@ -186,8 +214,8 @@ class Menu:
 
     def draw_game_screen(self, mouse_pos):
 
-        after = time.perf_counter()
-        board.submenu.update_text(f"Puzzle 1/{len(puzzle_interface.get_all_csci4463_puzzle_files())} | Difficulty: {board.difficulty} | Time elapsed: {round(after-before)}", 40)
+        if board.board_is_solved:
+            return
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             button = board.get_button_from_mouse_pos(mouse_pos)
@@ -342,14 +370,17 @@ while running:
             pygame.quit()  # TODO: Some people recommend this. Necessary?
             quit()  # And why this?
 
-    if menu.is_main_menu:
-        menu.draw_main_menu(mouse_position)
-    elif menu.is_game_screen:
-        menu.draw_game_screen(mouse_position)
-    elif menu.is_settings_menu:
-        menu.draw_settings_menu(mouse_position)
-    else:
-        running = False
-        pygame.quit()
-        quit()
+        if menu.is_main_menu:
+            menu.draw_main_menu(mouse_position)
+        elif menu.is_game_screen:
+            menu.draw_game_screen(mouse_position)
+        elif menu.is_settings_menu:
+            menu.draw_settings_menu(mouse_position)
+        else:
+            running = False
+            pygame.quit()
+            quit()
+
+    if menu.is_game_screen:
+        board.update_submenu_text()
 
