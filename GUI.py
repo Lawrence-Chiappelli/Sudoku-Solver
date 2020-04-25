@@ -1,5 +1,4 @@
 import pygame
-import copy
 from SudokuPuzzleSolver import PuzzleInterface
 from ButtonTxtRsc import TextResources
 from ConfigFiles import configvideo, configcolor
@@ -39,9 +38,10 @@ class Board:
 
         self.board = puzzle_interface.format_board_manually(self.board)
         if self.board == self.board_solved:
-            print(f"Puzzle solved!")
-        else:
-            print(f"Puzzle not solved!")
+            self._indicate_solved_board()
+
+    def _indicate_solved_board(self):
+        pass
 
     def update_tile(self, button):
 
@@ -90,7 +90,7 @@ class Board:
 
                 # Create & draw a button on each loop
                 button = Button(str(tile), colors.tile_default, x, y, w, h)  # 2)
-                button.draw(window, colors.grey_discord)
+                button.draw(window)
 
                 # Replace individual board tile with tuple of critical information
                 self.board[r][t] = button
@@ -103,8 +103,8 @@ class Board:
                 # 2 - It's a multiple of 3 (except for 0)
                 if (r == 0) and (t % 3 == 0 and t != 0):
                     position = x - w - (margin*2)  # Note: I don't know why this works for both x and y
-                    column_vertical = Button("", colors.black, position, 0, margin, window.get_height())
-                    column_horizontal = Button("", colors.black, 0, position, window.get_width(), margin)
+                    column_vertical = Button("", colors.grey_light, position, 0, margin, window.get_height())
+                    column_horizontal = Button("", colors.grey_light, 0, position, window.get_width(), margin)
                     dividers.append(column_vertical)
                     dividers.append(column_horizontal)
 
@@ -196,7 +196,7 @@ class Menu:
         self.is_main_menu = False
         self.is_settings_menu = False
         self.is_game_screen = True
-        window.fill(colors.white)
+        window.fill(colors.black)
         pygame.display.flip()
 
         # -----------------------+
@@ -250,9 +250,19 @@ class Button:
                 return True
         return False
 
-    def update_color(self, color):
+    def update_color(self, color, outline=None):
+
+        """
+        :param color: update the color of the button
+        :param outline: this is assuming the button doesn't already have an outline
+        :return: the button drawn on the window surface
+        """
+
         self.color = color
-        self.draw(window, colors.black)
+        if outline:
+            self.draw(window, outline)
+        else:
+            self.draw(window)
 
     def update_text(self, text):
 
@@ -260,7 +270,7 @@ class Button:
             text = str(text)
 
         self.text = text
-        self.draw(window, colors.black)
+        self.draw(window)
 
 
 def text_objects(text, config):
