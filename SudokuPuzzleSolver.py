@@ -8,7 +8,7 @@ import re
 class PuzzleInterface:
 
     def __init__(self):
-        self.all_puzzle_files = [puzzlefile for puzzlefile in os.listdir('CSCI4463SudokuPuzzles') if puzzlefile.endswith(".txt")]
+        self.all_puzzle_files = [puzzlefile for puzzlefile in os.listdir("CSCI4463SudokuPuzzles") if puzzlefile.endswith(".txt")]
 
     def get_all_csci4463_puzzle_files(self):
         return self.all_puzzle_files
@@ -22,7 +22,7 @@ class PuzzleInterface:
         medium_puzzles = ["03", "04", "07", "11", "14"]
         hard_puzzles = ["05", "08", "09", "12", "15", "16"]
 
-        file_difficulty = re.search(r'\d+', puzzlefile).group(0)
+        file_difficulty = re.search(r"\d+", puzzlefile).group(0)
         if file_difficulty in easy_puzzles:
             return "Easy"
         elif file_difficulty in medium_puzzles:
@@ -35,12 +35,12 @@ class PuzzleInterface:
 
     def read_puzzle_from_file(self, file):
         try:
-            with open(f'CSCI4463SudokuPuzzles/{file}', 'r') as file_contents:
+            with open(f"CSCI4463SudokuPuzzles/{file}", "r") as file_contents:
                 puzzle = file_contents.read()
                 return self.get_puzzle_as_2d_array(puzzle)
         except FileNotFoundError as fnfe:
             warnings.warn(f"Files were not found:\n{fnfe}\n\nLast check for files- searching root directory...", UserWarning)
-            with open(file, 'r') as puzzle:
+            with open(file, "r") as puzzle:
                 return self.get_puzzle_as_2d_array(puzzle)
 
     def solve_puzzle_with_backtracking(self, puzzle):

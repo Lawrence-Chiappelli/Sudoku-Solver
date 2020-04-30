@@ -1,6 +1,7 @@
 import pygame
 import time
 import copy
+import sys
 from SudokuPuzzleSolver import PuzzleInterface
 from Resources import TextRscs
 from ConfigFiles import configvideo, configcolor
@@ -409,7 +410,7 @@ class Button:
             else:
                 text_size = text_size
 
-            font = pygame.font.SysFont('comicsans', text_size)
+            font = pygame.font.SysFont(configvideo.font_name, text_size)
             text = font.render(self.text, 1, colors.white)
             center = (self.x + (self.w//2 - text.get_width()//2), self.y + (self.h//2 - text.get_height()//2))
             surface.blit(text, center)
@@ -451,7 +452,7 @@ def text_objects(text, config):
 
 
 def display_text(text):
-    font_size_config = pygame.font.Font(graphics.font_type, graphics.font_size)
+    font_size_config = pygame.font.SysFont(graphics.font_name, graphics.font_size)
     text_surface, text_rectangle = text_objects(text, font_size_config)
     text_rectangle.center = ((800//2), 100)
     window.blit(text_surface, text_rectangle)
@@ -492,7 +493,7 @@ while running:
         if event.type == pygame.QUIT:
             running = False
             pygame.quit()
-            quit()
+            sys.exit()
 
         if menu.is_main_menu:
             menu.draw_main_menu(mouse_position)
@@ -503,7 +504,7 @@ while running:
         else:
             running = False
             pygame.quit()
-            quit()
+            sys.exit()
 
     if menu.is_game_screen:
         board.update_submenu_text()
