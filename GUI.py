@@ -410,7 +410,7 @@ class Button:
             else:
                 text_size = text_size
 
-            font = pygame.font.SysFont(configvideo.font_name, text_size)
+            font = pygame.font.SysFont(graphics.font_name, text_size)
             text = font.render(self.text, 1, colors.white)
             center = (self.x + (self.w//2 - text.get_width()//2), self.y + (self.h//2 - text.get_height()//2))
             surface.blit(text, center)
@@ -459,7 +459,7 @@ def display_text(text):
     pygame.display.update()
 
 
-graphics = configvideo
+graphics = configvideo.VideoConfig()
 colors = configcolor
 menu = Menu()
 board = Board()

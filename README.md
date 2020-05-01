@@ -24,6 +24,22 @@ Sudoku rules explained [here](https://www.bigfishgames.com/blog/how-to-solve-sud
 ## Download
 In-progress.
 
+4/30/2020: As an alternative, download the repository as a ZIP (above). Then, open the dist directory and move GUI.exe into the root directory. The application should then, in theory, be launched successfully.
+
+## Custom Compilation
+
+1. `pip install pyinstaller` onto your machine. I strongly recommend consulting outside resources to absolutely ensure that you are doing this correctly.
+2. Change directories to the root of this repository.
+3. Run the following magic line:
+
+```
+pyinstaller --hidden-import "matplotlib" --onefile GUI.py
+```
+
+My guess is that matplotlib is considered hidden because it's not being imported under GUI.py- the script that pyinstaller runs off of.
+
+Just a fair warning- pyinstaller can be finicky. If using anaconda, install pycharm in the same anaconda virtual environment that you're using with this project.
+
 ## Compatability
 
 ### Computer Specifications
