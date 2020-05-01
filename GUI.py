@@ -3,13 +3,12 @@ import time
 import copy
 import sys
 from SudokuPuzzleSolver import PuzzleInterface
-from Resources import TextRscs
-from ConfigFiles import configvideo, configcolor
+from Resources.Strings import TextRscs
+from Resources.ConfigFiles import configcolor, configvideo
 
 # -------------+
 pygame.init()  #
 # -------------+
-
 
 class Board:
 
@@ -213,21 +212,21 @@ class Board:
         h += self.bandaid+self.bandaid
 
         button1 = Button(txt_rsrcs.puzzle, colors.side_menu, x, y, w, h // 2)
-        button1.draw(window, None, 30, False)
+        button1.draw(window, None, graphics.get_font_size(20), False)
         button2 = Button(self.puzzle_file, colors.side_menu, x, (h // 2), w, h // 2)
-        button2.draw(window, None, 25, False)
+        button2.draw(window, None, graphics.get_font_size(20), False)
         button3 = Button(txt_rsrcs.best_time, colors.side_menu, x, h, w, (h+self.margin) // 2)
-        button3.draw(window, colors.black, 24, False)
+        button3.draw(window, colors.black, graphics.get_font_size(15), False)
         button4 = Button(txt_rsrcs.wip, colors.side_menu, x, h + button3.h, w, (h + self.margin) // 2)
-        button4.draw(window, None, 24, False)
+        button4.draw(window, None, graphics.get_font_size(20), False)
         button5 = Button(txt_rsrcs.cycle, colors.submenu, x, h * 2 + 2, w, (h + self.margin) // 3)
-        button5.draw(window, colors.black, 24, False)
+        button5.draw(window, colors.black, graphics.get_font_size(20), False)
 
         self.button_next = Button(txt_rsrcs.arrow_next, colors.submenu, x+self.margin, (h * 2 + 2) + w + (self.margin*3) + self.margin, w - (self.margin*2), ((h + self.margin) // 3) - (self.margin*6))
-        self.button_next.draw(window, colors.grey_discord, 24, False)
+        self.button_next.draw(window, colors.grey_discord, graphics.get_font_size(), False)
 
         self.button_previous = Button(txt_rsrcs.arrow_previous, colors.submenu, x+self.margin, (h * 2 + 2) + w * 2 + self.margin, w - (self.margin*2), ((h + self.margin) // 3) - (self.margin*6))
-        self.button_previous.draw(window, colors.grey_discord, 24, False)
+        self.button_previous.draw(window, colors.grey_discord, graphics.get_font_size(), False)
         return None
 
     def _process_completed_board(self, board_to_update):
@@ -247,14 +246,16 @@ class Board:
         self.submenu.update_color(colors.puzzle_solved)
 
         time_completed = round(time.perf_counter()-self.elapsed_start)
-        self.submenu.update_text(f"PUZZLE SOLVED! | Time to complete: {time_completed} seconds", 40)
+        self.submenu.update_text(f"PUZZLE SOLVED! | Time to complete: {time_completed} seconds", graphics.get_font_size(38))
 
     def update_submenu_text(self):
 
-        if self.board_is_solved:
+        if self.board_is_solved:  # Stop updating this particular text is the user solved the board
             return
 
-        board.submenu.update_text(f"Puzzle {self.puzzle_index+1}/{len(puzzle_interface.get_all_csci4463_puzzle_files())} | Difficulty: {board.difficulty} | Time elapsed: {round(time.perf_counter()-self.elapsed_start)}", 40)
+        text = f"Puzzle {self.puzzle_index+1}/{len(puzzle_interface.get_all_csci4463_puzzle_files())} | Difficulty: {board.difficulty} | Time elapsed: {round(time.perf_counter()-self.elapsed_start)}"
+        size = graphics.get_font_size(35)
+        board.submenu.update_text(text, size)
 
     def update_side_menu_buttons(self, mouse_pos):
 
@@ -387,14 +388,17 @@ class Button:
         Draws the button on the screen
         :param surface: the window/surface to draw on
         :param outline: outline color, if any
-        :param text_size: size of button text
+        :param text_size: override text size of button
         :param xcenter: center this button on the x-axis? False by default
+        TODO: optional parameter for font type override?
         """
         if xcenter:
             self.x = (surface.get_width() // 2) - (self.w // 2) - 4
 
+        """
+        Draw rectangles:
+        """
         if outline:
-            # x = self.x-4
             x = self.x-4
             y = self.y-4
             w = self.w+8
@@ -403,14 +407,15 @@ class Button:
 
         pygame.draw.rect(surface, self.color, (self.x, self.y, self.w, self.h), 0)
 
+        """
+        Draw text and text properties:
+        """
         if self.text != '':
 
-            if text_size is None:
-                text_size = 60
-            else:
-                text_size = text_size
+            if text_size is None:  # If no override, revert to default size
+                text_size = graphics.get_font_size()
 
-            font = pygame.font.SysFont(graphics.font_name, text_size)
+            font = pygame.font.Font("Resources/Fonts/FreeSansBold-Xgdd.ttf", text_size)
             text = font.render(self.text, 1, colors.white)
             center = (self.x + (self.w//2 - text.get_width()//2), self.y + (self.h//2 - text.get_height()//2))
             surface.blit(text, center)
@@ -452,7 +457,8 @@ def text_objects(text, config):
 
 
 def display_text(text):
-    font_size_config = pygame.font.SysFont(graphics.font_name, graphics.font_size)
+
+    font_size_config = pygame.font.Font("Resources/Fonts/FreeSansBold-Xgdd.ttf", graphics.get_font_size())
     text_surface, text_rectangle = text_objects(text, font_size_config)
     text_rectangle.center = ((800//2), 100)
     window.blit(text_surface, text_rectangle)
@@ -466,7 +472,7 @@ board = Board()
 txt_rsrcs = TextRscs
 puzzle_interface = PuzzleInterface()
 
-window = pygame.display.set_mode(graphics.resolution)
+window = pygame.display.set_mode(graphics.get_resolution())
 window.fill(colors.grey_discord)
 pygame.display.set_caption(txt_rsrcs.caption)
 display_text(txt_rsrcs.main_menu_title)
@@ -479,7 +485,6 @@ button_settings.draw(window, colors.black, None, True)
 # ---------------------+
 pygame.display.flip()  #
 # ---------------------+
-
 
 running = True
 while running:

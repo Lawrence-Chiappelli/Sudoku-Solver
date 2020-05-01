@@ -28,7 +28,7 @@ In-progress.
 
 ## Custom Compilation
 
-1. `pip install pyinstaller` onto your machine. I strongly recommend consulting outside resources to absolutely ensure that you are doing this correctly.
+1. `pip install https://github.com/pyinstaller/pyinstaller/archive/develop.tar.gz` onto your machine. I strongly recommend consulting outside resources to absolutely ensure that you are doing this correctly.
 2. Change directories to the root of this repository.
 3. Run the following magic line:
 
