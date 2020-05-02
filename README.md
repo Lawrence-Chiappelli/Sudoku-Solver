@@ -22,9 +22,7 @@ Sudoku rules explained [here](https://www.bigfishgames.com/blog/how-to-solve-sud
 * Diagnal numbers can be identical
 
 ## Download
-In-progress.
-
-4/30/2020: As an alternative, download the repository as a ZIP (above). Then, open the dist directory and move GUI.exe into the root directory. The application should then, in theory, be launched successfully.
+The installer is available under [releases](https://github.com/Lawrence-Chiappelli/Sudoku-Solver/releases).
 
 ## Custom Compilation
 
@@ -33,17 +31,23 @@ In-progress.
 3. Run the following magic line:
 
 ```
-pyinstaller --hidden-import "matplotlib" --onefile GUI.py
+pyinstaller --onefile -w GUI.py
 ```
 
-My guess is that matplotlib is considered hidden because it's not being imported under GUI.py- the script that pyinstaller runs off of.
+It will generate the .exe under the "dist" folder, so make sure to cut+paste it into the parent directory.
 
 Just a fair warning- pyinstaller can be finicky. If using anaconda, install pyinstaller in the same anaconda virtual environment that you're using with this project.
+
+Also note: include `--hidden-import "matplotlib` to the above command if you are contributing and using matplotlib. It behaves very strangely, which may be in part due to it's several dependencies on other libraries.
 
 ## Compatability
 
 ### Computer Specifications
-Your computer requires very minimal processing power to run this application.
+Your computer requires very minimal processing power to run this application. 
+
+However, there may be noticable lag when the program attempts to solve each puzzle *once*. As a vague benchmark: the easier puzzles takes roughly 1 second or less to solve on my PC. The hardest single puzzle takes about 5 seconds to solve. This area of performance should be considered moot nonetheless, as the algorithm is only run once and the duration may only last seconds.
 
 ### Operating System
-This application been tested on Windows 10 only.
+* **Windows 10**: Tested and working
+* **Linux**: Not tested
+* **MacOS**: Not tested
