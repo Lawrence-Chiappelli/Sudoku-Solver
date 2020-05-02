@@ -90,17 +90,21 @@ class Board:
     def validate_solution(self):
 
         # Return if board contains any 0s / is incomplete
+        print(f"Validating")
         for row in self.board:
             for button in row:
                 if button.text == " " or button.text == "":
+                    print(f"Cannot validate yet")
                     return
 
         # Only solve the original board once. This takes the longest- optimal to do so here.
         if self.board_solution is None:
-            self.button_submenu.update_text(txt_rsrcs.solving, 40)
+            print("Solving...")
+            self.button_submenu.update_text(txt_rsrcs.solving)
             self.button_submenu.update_color(colors.grey)
             self.board_solution = puzzle_interface.solve_puzzle_with_backtracking(puzzle_interface.read_puzzle_from_file(self.puzzle_file))
             self.button_submenu.update_color(colors.submenu)
+        print(f"Done solving")
 
         # Create a copy of the board- it's original state is being converted for comparisons
         user_board_copy = copy.copy(self.board)
@@ -321,7 +325,7 @@ class Board:
         self.button_submenu.update_color(colors.puzzle_solved)
 
         time_completed = round(time.perf_counter()-self.elapsed_start)
-        self.button_submenu.update_text(f"PUZZLE SOLVED! | Time to complete: {time_completed} seconds", graphics.get_font_size(38))
+        self.button_submenu.update_text(f"PUZZLE SOLVED! | Time to complete: {time_completed} seconds")
 
     def update_submenu(self):
 
@@ -464,20 +468,19 @@ class Menu:
             else:
                 button = board.get_button_from_mouse_pos(mouse_pos)
                 if button:
-                    if event.button == 1:
+                    if event.button == 1:  # Left click
                         if button.text == " " or button.text == "" or button.color == colors.tile_confirmed:
                             board.update_tile(button, event.button)
-                    elif event.button == 3:
+                    elif event.button == 3:  # Right click
                         if button.color == colors.tile_selected or button.color == colors.tile_confirmed:
                             board.clear_tile(button)
-                    board.validate_solution()
 
         if event.type == pygame.KEYDOWN:
             if board.active_tile is None:
                 return
             else:
                 board.update_tile(board.active_tile, event.key)
-
+                board.validate_solution()
 
     def _load_main_menu(self):
         pass
