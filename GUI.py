@@ -27,7 +27,7 @@ import time
 import copy
 import sys
 from SudokuPuzzleSolver import PuzzleInterface
-from Resources.Strings import TextRscs
+from Resources.Strings import ButtonTxt
 from Resources.ConfigFiles import configcolor, configvideo
 
 # -------------+
@@ -230,26 +230,27 @@ class Board:
         """
 
         # TODO: These micro-pixel adjustments are probably
-        # going to break if the window is resized
+        # going to break if the window is resized.
+        # Is this the naive solution?
 
-        w += self.bandaid+self.bandaid
-        h += self.bandaid+self.bandaid
+        bandaid = self.bandaid + self.bandaid  # 2 seemed to the sweet spot for these buttons
+        w += bandaid
+        h += bandaid
 
-        button1 = Button(txt_rsrcs.puzzle, colors.side_menu, x, y, w, h // 2)
-        button1.draw(window, None, graphics.get_font_size(20), False)
-        button2 = Button(self.puzzle_file, colors.side_menu, x, (h // 2), w, h // 2)
-        button2.draw(window, None, graphics.get_font_size(20), False)
-        button3 = Button(txt_rsrcs.best_time, colors.side_menu, x, h, w, (h+self.margin) // 2)
-        button3.draw(window, colors.black, graphics.get_font_size(15), False)
-        button4 = Button(txt_rsrcs.wip, colors.side_menu, x, h + button3.h, w, (h + self.margin) // 2)
-        button4.draw(window, None, graphics.get_font_size(20), False)
-        button5 = Button(txt_rsrcs.cycle, colors.submenu, x, h * 2 + 2, w, (h + self.margin) // 3)
+        button1 = Button(txt_rsrcs.puzzle, colors.side_menu, x, (y+self.margin) // bandaid, w, (h // bandaid) - self.margin)
+        button1.draw(window, colors.black, graphics.get_font_size(20), False)
+        button2 = Button(self.puzzle_file, colors.side_menu, x, (h // bandaid), w, (h // bandaid) - bandaid)
+        button2.draw(window, colors.black, graphics.get_font_size(18), False)
+        button3 = Button(txt_rsrcs.auto_solve, colors.submenu, x+self.margin, h+(self.margin*11), w-(self.margin*bandaid), (h-self.margin) // bandaid)
+        button3.draw(window, colors.grey, graphics.get_font_size(15), False)
+        # button4 = Button("", colors.side_menu, x, h + button3.h, w, (h + self.margin) // 2)
+        # button4.draw(window, None, graphics.get_font_size(20), False)
+        button5 = Button(txt_rsrcs.cycle, colors.submenu, x, h * bandaid + bandaid, w, (h + self.margin) // 3)
         button5.draw(window, colors.black, graphics.get_font_size(20), False)
 
-        self.button_next = Button(txt_rsrcs.arrow_next, colors.submenu, x+self.margin, (h * 2 + 2) + w + (self.margin*3) + self.margin, w - (self.margin*2), ((h + self.margin) // 3) - (self.margin*6))
+        self.button_next = Button(txt_rsrcs.arrow_next, colors.submenu, x+self.margin, (h * bandaid + bandaid) + w + (self.margin*3) + self.margin, w - (self.margin*bandaid), ((h + self.margin) // 3) - (self.margin*6))
         self.button_next.draw(window, colors.grey_discord, graphics.get_font_size(), False)
-
-        self.button_previous = Button(txt_rsrcs.arrow_previous, colors.submenu, x+self.margin, (h * 2 + 2) + w * 2 + self.margin, w - (self.margin*2), ((h + self.margin) // 3) - (self.margin*6))
+        self.button_previous = Button(txt_rsrcs.arrow_previous, colors.submenu, x+self.margin, (h * bandaid + bandaid) + w * bandaid + self.margin, w - (self.margin*bandaid), ((h + self.margin) // 3) - (self.margin*6))
         self.button_previous.draw(window, colors.grey_discord, graphics.get_font_size(), False)
         return None
 
@@ -493,7 +494,7 @@ graphics = configvideo.VideoConfig()
 colors = configcolor
 menu = Menu()
 board = Board()
-txt_rsrcs = TextRscs
+txt_rsrcs = ButtonTxt
 puzzle_interface = PuzzleInterface()
 
 window = pygame.display.set_mode(graphics.get_resolution())

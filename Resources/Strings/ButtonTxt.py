@@ -1,3 +1,4 @@
+"""
 MIT License
 
 Copyright (c) 2020 Lawrence Chiappelli
@@ -19,3 +20,20 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+"""
+
+main_menu_title = "Sudoku Puzzles"
+caption = "Sudoku Puzzles"
+clicked = "Coming soon!"
+hovering = "Hovering!"
+
+play = "Play"
+settings = "Settings"
+
+puzzle = "File:"
+auto_solve = "SOLVE"
+solving = "Getting solution, please wait..."
+wip = "WIP"
+cycle = "Cycle:"
+arrow_next = "-->"
+arrow_previous = "<--"
