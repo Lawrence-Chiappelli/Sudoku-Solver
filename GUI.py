@@ -55,6 +55,7 @@ class Board:
         self.num_total_puzzles = None
 
         # Side menu
+        self.button_autosolve = None  # Solve button
         self.button_next = None  # Next button
         self.button_previous = None  # Previous button
 
@@ -241,13 +242,11 @@ class Board:
         button1.draw(window, colors.black, graphics.get_font_size(20), False)
         button2 = Button(self.puzzle_file, colors.side_menu, x, (h // bandaid), w, (h // bandaid) - bandaid)
         button2.draw(window, colors.black, graphics.get_font_size(18), False)
-        button3 = Button(txt_rsrcs.auto_solve, colors.submenu, x+self.margin, h+(self.margin*11), w-(self.margin*bandaid), (h-self.margin) // bandaid)
-        button3.draw(window, colors.grey, graphics.get_font_size(15), False)
-        # button4 = Button("", colors.side_menu, x, h + button3.h, w, (h + self.margin) // 2)
-        # button4.draw(window, None, graphics.get_font_size(20), False)
-        button5 = Button(txt_rsrcs.cycle, colors.submenu, x, h * bandaid + bandaid, w, (h + self.margin) // 3)
-        button5.draw(window, colors.black, graphics.get_font_size(20), False)
+        button3 = Button(txt_rsrcs.cycle, colors.submenu, x, h * bandaid + bandaid, w, (h + self.margin) // 3)  # Make this 3 a 2 to revert to half size
+        button3.draw(window, colors.black, graphics.get_font_size(20), False)
 
+        self.button_autosolve = Button(txt_rsrcs.auto_solve, colors.submenu, x+self.margin, h+(self.margin*11), w-(self.margin*bandaid), (h-self.margin) // bandaid)
+        self.button_autosolve.draw(window, colors.grey, graphics.get_font_size(15), False)
         self.button_next = Button(txt_rsrcs.arrow_next, colors.submenu, x+self.margin, (h * bandaid + bandaid) + w + (self.margin*3) + self.margin, w - (self.margin*bandaid), ((h + self.margin) // 3) - (self.margin*6))
         self.button_next.draw(window, colors.grey_discord, graphics.get_font_size(), False)
         self.button_previous = Button(txt_rsrcs.arrow_previous, colors.submenu, x+self.margin, (h * bandaid + bandaid) + w * bandaid + self.margin, w - (self.margin*bandaid), ((h + self.margin) // 3) - (self.margin*6))
@@ -282,25 +281,6 @@ class Board:
         size = graphics.get_font_size(35)
         board.submenu.update_text(text, size)
 
-    def update_side_menu_buttons(self, mouse_pos):
-
-        """
-        :param mouse_pos: mouse position of submenu button
-        :return: individual submenu behavior
-        """
-
-        # Next button
-        if self.button_next.is_over(mouse_pos):
-            self.button_next.update_color(colors.tile_hovering)
-        else:
-            self.button_next.update_color(colors.submenu)
-
-        # Previous button
-        if self.button_previous.is_over(mouse_pos):
-            self.button_previous.update_color(colors.tile_hovering)
-        else:
-            self.button_previous.update_color(colors.submenu)
-
     def get_button_from_mouse_pos(self, mouse_pos):
 
         for row in self.board:
@@ -328,8 +308,10 @@ class Menu:
 
     def draw_main_menu(self, mouse_pos):
 
-        # MouseMotion events
+        # MouseMotion - Adjust colors when hovering
         if event.type == pygame.MOUSEMOTION:
+
+            # Button - play
             if button_main.is_over(mouse_pos):
                 if button_main.text == txt_rsrcs.play:
                     button_main.update_color(colors.green)
@@ -337,6 +319,7 @@ class Menu:
                 button_main.update_color(colors.tile_default)
                 button_main.update_text(txt_rsrcs.play)
 
+            # Button - settings
             if button_settings.is_over(mouse_pos):
                 if button_settings.text == txt_rsrcs.settings:
                     button_settings.update_color(colors.green)
@@ -344,7 +327,7 @@ class Menu:
                 button_settings.update_color(colors.tile_default)
                 button_settings.update_text(txt_rsrcs.settings)
 
-        # MouseButtonDown events - load game screens here
+        # MouseButtonDown - loads game screens
         if event.type == pygame.MOUSEBUTTONDOWN:
 
             if button_main.is_over(mouse_pos):
@@ -361,6 +344,26 @@ class Menu:
         if board.board_is_solved:
             return
 
+        # ---------------------------#
+        board.update_submenu_text()  #
+        # ---------------------------#  Handles submenu timer updating
+
+        # MouseMotion - Adjust colors when hovering
+        if event.type == pygame.MOUSEMOTION:
+
+            # Button - next puzzle
+            if board.button_next.is_over(mouse_pos):
+                board.button_next.update_color(colors.tile_hovering)
+            else:
+                board.button_next.update_color(colors.submenu)
+
+            # Button - previous puzzle
+            if board.button_previous.is_over(mouse_pos):
+                board.button_previous.update_color(colors.tile_hovering)
+            else:
+                board.button_previous.update_color(colors.submenu)
+
+        #  MouseButtonDown - Execute functionality
         if event.type == pygame.MOUSEBUTTONDOWN:
 
             if board.button_next.is_over(mouse_pos):
@@ -535,8 +538,3 @@ while running:
             running = False
             pygame.quit()
             sys.exit()
-
-    if menu.is_game_screen:
-        board.update_submenu_text()
-        board.update_side_menu_buttons(mouse_position)
-
