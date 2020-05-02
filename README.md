@@ -38,7 +38,7 @@ pyinstaller --hidden-import "matplotlib" --onefile GUI.py
 
 My guess is that matplotlib is considered hidden because it's not being imported under GUI.py- the script that pyinstaller runs off of.
 
-Just a fair warning- pyinstaller can be finicky. If using anaconda, install pycharm in the same anaconda virtual environment that you're using with this project.
+Just a fair warning- pyinstaller can be finicky. If using anaconda, install pyinstaller in the same anaconda virtual environment that you're using with this project.
 
 ## Compatability
 
