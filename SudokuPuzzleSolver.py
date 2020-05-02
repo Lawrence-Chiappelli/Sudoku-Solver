@@ -1,13 +1,38 @@
+"""
+MIT License
+
+Copyright (c) 2020 Lawrence Chiappelli
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
+
 # © 2020 Lawrence Chiappelli. All Rights Rerserved.
 import os
 import warnings
 import copy
 import re
 
+
 class PuzzleInterface:
 
     def __init__(self):
-        self.all_puzzle_files = [puzzlefile for puzzlefile in os.listdir('CSCI4463SudokuPuzzles') if puzzlefile.endswith(".txt")]
+        self.all_puzzle_files = [puzzlefile for puzzlefile in os.listdir("CSCI4463SudokuPuzzles") if puzzlefile.endswith(".txt")]
 
     def get_all_csci4463_puzzle_files(self):
         return self.all_puzzle_files
@@ -21,7 +46,7 @@ class PuzzleInterface:
         medium_puzzles = ["03", "04", "07", "11", "14"]
         hard_puzzles = ["05", "08", "09", "12", "15", "16"]
 
-        file_difficulty = re.search(r'\d+', puzzlefile).group(0)
+        file_difficulty = re.search(r"\d+", puzzlefile).group(0)
         if file_difficulty in easy_puzzles:
             return "Easy"
         elif file_difficulty in medium_puzzles:
@@ -34,20 +59,28 @@ class PuzzleInterface:
 
     def read_puzzle_from_file(self, file):
         try:
-            with open(f'CSCI4463SudokuPuzzles/{file}', 'r') as file_contents:
+            with open(f"CSCI4463SudokuPuzzles/{file}", "r") as file_contents:
                 puzzle = file_contents.read()
-                return puzzle
+                return self.get_puzzle_as_2d_array(puzzle)
         except FileNotFoundError as fnfe:
             warnings.warn(f"Files were not found:\n{fnfe}\n\nLast check for files- searching root directory...", UserWarning)
-            with open(file, 'r') as puzzle:
-                return puzzle
+            with open(file, "r") as puzzle:
+                return self.get_puzzle_as_2d_array(puzzle)
 
     def solve_puzzle_with_backtracking(self, puzzle):
+        """
+
+        Make sure to convert the puzzle to a 2D array
+
+        :param puzzle:
+        :return: the puzzle
+        """
 
         empty_tile = self._get_tile_position(puzzle)
 
         if empty_tile is None:
-            return True
+            return puzzle
+            # return True
         else:
             row_pos, col_pos = empty_tile
 
@@ -56,7 +89,7 @@ class PuzzleInterface:
                 puzzle[row_pos][col_pos] = test_val
 
                 if self.solve_puzzle_with_backtracking(puzzle):
-                    return self.print_board_organized(puzzle)
+                    return self._format_board_automatically(puzzle)
 
                 # Here, *RESET* the tile to 0 if the given solutions do not work. This is backtracking.
                 puzzle[row_pos][col_pos] = 0
@@ -118,7 +151,34 @@ class PuzzleInterface:
 
         return None
 
-    def print_board_organized(self, puzzle):
+    def format_board_manually(self, puzzle):
+
+        """
+        :param puzzle: must contain PyGame button objects
+        :return: ultimately, the formatted board used to compare solution
+        """
+
+        user_board = []
+        for row in puzzle:
+            local_row = []
+            for button in row:
+                try:
+                    if button.text == " " or button.text == "":
+                        local_row.append(0)
+                    else:
+                        local_row.append(int(button.text))
+                except TypeError as te:
+                    raise TypeError(f"Wrong format for final conversion! The board being passed through must contain button objects. Traceback:\n{te}")
+            user_board.append(copy.copy(local_row))
+        user_board = self._format_board_automatically(user_board)
+        return user_board
+
+    def _format_board_automatically(self, puzzle):
+
+        """
+        :param puzzle:
+        :return: board rows *indented*
+        """
 
         organized = ""
         for row in puzzle:
