@@ -34,6 +34,7 @@ from Resources.ConfigFiles import configcolor, configvideo
 pygame.init()  #
 # -------------+
 
+
 class Board:
 
     def __init__(self):
@@ -48,7 +49,7 @@ class Board:
         self.board_is_solved = False
 
         # Submenu items
-        self.submenu = None  # Individual button
+        self.button_submenu = None  # Individual button
         self.puzzle_as_file = None
         self.difficulty = None
         self.elapsed_start = None
@@ -58,6 +59,10 @@ class Board:
         self.button_autosolve = None  # Solve button
         self.button_next = None  # Next button
         self.button_previous = None  # Previous button
+
+        # Tile selection mode
+        self.click_to_type = True
+        self.is_typing = False
 
     def initialize_board(self, forward=True):
 
@@ -92,10 +97,10 @@ class Board:
 
         # Only solve the original board once. This takes the longest- optimal to do so here.
         if self.board_solution is None:
-            self.submenu.update_text(txt_rsrcs.solving, 40)
-            self.submenu.update_color(colors.grey)
+            self.button_submenu.update_text(txt_rsrcs.solving, 40)
+            self.button_submenu.update_color(colors.grey)
             self.board_solution = puzzle_interface.solve_puzzle_with_backtracking(puzzle_interface.read_puzzle_from_file(self.puzzle_file))
-            self.submenu.update_color(colors.submenu)
+            self.button_submenu.update_color(colors.submenu)
 
         # Create a copy of the board- it's original state is being converted for comparisons
         user_board_copy = copy.copy(self.board)
@@ -109,9 +114,39 @@ class Board:
 
     def update_tile(self, button, user_input):
 
-        if self.board_is_solved:
-            return
+        """
+        :param button: the tile button
+        :param user_input: which mouse button the user pressed
+        :return: None
 
+        First determines which method of tile selection.
+        TODO: Functionality for _cycle_tile
+        """
+
+        if self.board_is_solved:
+            return None
+
+        if self.click_to_type:
+            self._type_tile(button, user_input)
+        else:
+            self._cycle_tile(button, user_input)
+
+    def _type_tile(self, button, user_input):
+
+        """
+        :param button:
+        :param user_input: should be a keyboard press
+        :return:
+        """
+
+        if not self.is_typing:
+            self.is_typing = True
+            button.update_color(colors.tile_selected)
+        else:
+            # TODO: Process keyboard input
+            print(f"User input: {user_input}\nAnd dir: {dir(user_input)}")
+
+    def _cycle_tile(self, button, user_input):
         valid_numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9]
         index = self._tile_number_index_selector(valid_numbers, button, user_input)
         number = valid_numbers[index]
@@ -188,7 +223,7 @@ class Board:
                     tile = ""
 
                 # Create & draw a button on each loop
-                button = Button(str(tile), colors.tile_default, x, y, w, h)  # 2)
+                button = Button(str(tile), graphics.get_font_size(), colors.tile_default, x, y, w, h)  # 2)
                 button.draw(window)
 
                 # Replace individual board tile with tuple of critical information
@@ -202,8 +237,8 @@ class Board:
                 # 2 - It's a multiple of 3 (except for 0)
                 if (r == 0) and (t % 3 == 0 and t != 0):
                     position = x - w - (self.margin*2)  # Note: I don't know why this works for both x and y
-                    column_vertical = Button("", colors.grey_light, position, 0, self.margin, window.get_height())
-                    column_horizontal = Button("", colors.grey_light, 0, position, window.get_width(), self.margin)
+                    column_vertical = Button("", None, colors.grey_light, position, 0, self.margin, window.get_height())
+                    column_horizontal = Button("", None, colors.grey_light, 0, position, window.get_width(), self.margin)
                     dividers.append(column_vertical)
                     dividers.append(column_horizontal)
 
@@ -216,8 +251,8 @@ class Board:
             divider.draw(window)
 
     def _set_submenu_properties(self, x, y, w, h):
-        self.submenu = Button(f"", colors.submenu, x, y, w+self.margin+2, h)
-        self.submenu.draw(window, None, None, True)
+        self.button_submenu = Button(f"", graphics.get_font_size(30), colors.submenu, x, y, w + self.margin + 2, h)
+        self.button_submenu.draw(window, None, True)
         return None
 
     def _set_sidemenu_properties(self, x, y, w, h):
@@ -238,19 +273,19 @@ class Board:
         w += bandaid
         h += bandaid
 
-        button1 = Button(txt_rsrcs.puzzle, colors.side_menu, x, (y+self.margin) // bandaid, w, (h // bandaid) - self.margin)
-        button1.draw(window, colors.black, graphics.get_font_size(20), False)
-        button2 = Button(self.puzzle_file, colors.side_menu, x, (h // bandaid), w, (h // bandaid) - bandaid)
-        button2.draw(window, colors.black, graphics.get_font_size(18), False)
-        button3 = Button(txt_rsrcs.cycle, colors.submenu, x, h * bandaid + bandaid, w, (h + self.margin) // 3)  # Make this 3 a 2 to revert to half size
-        button3.draw(window, colors.black, graphics.get_font_size(20), False)
+        button1 = Button(txt_rsrcs.puzzle, graphics.get_font_size(20), colors.side_menu, x, (y+self.margin) // bandaid, w, (h // bandaid) - self.margin)
+        button1.draw(window, colors.black, False)
+        button2 = Button(self.puzzle_file, graphics.get_font_size(18), colors.side_menu, x, (h // bandaid), w, (h // bandaid) - bandaid)
+        button2.draw(window, colors.black, False)
+        button3 = Button(txt_rsrcs.cycle, graphics.get_font_size(20), colors.submenu, x, h * bandaid + bandaid, w, (h + self.margin) // 3)  # Make this 3 a 2 to revert to half size
+        button3.draw(window, colors.black, False)
 
-        self.button_autosolve = Button(txt_rsrcs.auto_solve, colors.submenu, x+self.margin, h+(self.margin*11), w-(self.margin*bandaid), (h-self.margin) // bandaid)
-        self.button_autosolve.draw(window, colors.grey, graphics.get_font_size(15), False)
-        self.button_next = Button(txt_rsrcs.arrow_next, colors.submenu, x+self.margin, (h * bandaid + bandaid) + w + (self.margin*3) + self.margin, w - (self.margin*bandaid), ((h + self.margin) // 3) - (self.margin*6))
-        self.button_next.draw(window, colors.grey_discord, graphics.get_font_size(), False)
-        self.button_previous = Button(txt_rsrcs.arrow_previous, colors.submenu, x+self.margin, (h * bandaid + bandaid) + w * bandaid + self.margin, w - (self.margin*bandaid), ((h + self.margin) // 3) - (self.margin*6))
-        self.button_previous.draw(window, colors.grey_discord, graphics.get_font_size(), False)
+        self.button_autosolve = Button(txt_rsrcs.auto_solve, graphics.get_font_size(15), colors.submenu, x+self.margin, h+(self.margin*11), w-(self.margin*bandaid), (h-self.margin) // bandaid)
+        self.button_autosolve.draw(window, colors.grey, False)
+        self.button_next = Button(txt_rsrcs.arrow_next, graphics.get_font_size(), colors.submenu, x+self.margin, (h * bandaid + bandaid) + w + (self.margin*3) + self.margin, w - (self.margin*bandaid), ((h + self.margin) // 3) - (self.margin*6))
+        self.button_next.draw(window, colors.grey_discord, False)
+        self.button_previous = Button(txt_rsrcs.arrow_previous, graphics.get_font_size(), colors.submenu, x+self.margin, (h * bandaid + bandaid) + w * bandaid + self.margin, w - (self.margin*bandaid), ((h + self.margin) // 3) - (self.margin*6))
+        self.button_previous.draw(window, colors.grey_discord, False)
         return None
 
     def _process_completed_board(self, board_to_update):
@@ -267,19 +302,70 @@ class Board:
         for row in board_to_update:
             for button in row:
                 button.update_color(colors.tile_solved)
-        self.submenu.update_color(colors.puzzle_solved)
+        self.button_submenu.update_color(colors.puzzle_solved)
 
         time_completed = round(time.perf_counter()-self.elapsed_start)
-        self.submenu.update_text(f"PUZZLE SOLVED! | Time to complete: {time_completed} seconds", graphics.get_font_size(38))
+        self.button_submenu.update_text(f"PUZZLE SOLVED! | Time to complete: {time_completed} seconds", graphics.get_font_size(38))
 
-    def update_submenu_text(self):
+    def update_submenu(self):
+
+        """
+        :return: None
+
+        This method handles updating the submenu
+        timer. Ideally, this should be called
+        every frame, *regardless of events*
+        to ensure that the time is
+        being reflected accurately.
+        """
 
         if self.board_is_solved:  # Stop updating this particular text is the user solved the board
-            return
+            return None
 
         text = f"Puzzle {self.puzzle_index+1}/{len(puzzle_interface.get_all_csci4463_puzzle_files())} | Difficulty: {board.difficulty} | Time elapsed: {round(time.perf_counter()-self.elapsed_start)}"
-        size = graphics.get_font_size(35)
-        board.submenu.update_text(text, size)
+        board.button_submenu.update_text(text)
+
+    def update_side_menu(self, mouse_pos):
+
+        """
+        :param mouse_pos: (x, y) position of mouse
+        :return: None
+
+        Note: the reason for having this method
+        outside of def draw_game_screen() is due
+        to the *timing* of button colors being drawn.
+
+        Should this be inside draw_game_screen(), the
+        hover highlight effect will disappear after
+        the player clicks the button. Ideally, the
+        highlight color should remain after the button
+        is clicked, not be reset to default.
+
+        This method update every frame, as opposed
+        to when pygame detects an event. Ultimately,
+        the highlight color will remain after
+        the button is clicked.
+        """
+        # Button - auto solve
+        if not self.board_is_solved:
+            if self.button_autosolve.is_over(mouse_pos):
+                self.button_autosolve.update_color(colors.green)
+            else:
+                self.button_autosolve.update_color(colors.submenu)
+
+        # Button - next puzzle
+        if self.button_next.is_over(mouse_pos):
+            self.button_next.update_color(colors.tile_hovering)
+        else:
+            self.button_next.update_color(colors.submenu)
+
+        # Button - previous puzzle
+        if self.button_previous.is_over(mouse_pos):
+            self.button_previous.update_color(colors.tile_hovering)
+        else:
+            self.button_previous.update_color(colors.submenu)
+
+        return None
 
     def get_button_from_mouse_pos(self, mouse_pos):
 
@@ -344,31 +430,20 @@ class Menu:
         if board.board_is_solved:
             return
 
-        # ---------------------------#
-        board.update_submenu_text()  #
-        # ---------------------------#  Handles submenu timer updating
-
-        # MouseMotion - Adjust colors when hovering
-        if event.type == pygame.MOUSEMOTION:
-
-            # Button - next puzzle
-            if board.button_next.is_over(mouse_pos):
-                board.button_next.update_color(colors.tile_hovering)
-            else:
-                board.button_next.update_color(colors.submenu)
-
-            # Button - previous puzzle
-            if board.button_previous.is_over(mouse_pos):
-                board.button_previous.update_color(colors.tile_hovering)
-            else:
-                board.button_previous.update_color(colors.submenu)
+        # See def update_side_menu() for side menu buttons.
+        # The reasoning for this is critical to understand.
 
         #  MouseButtonDown - Execute functionality
         if event.type == pygame.MOUSEBUTTONDOWN:
 
+            if board.button_autosolve.is_over(mouse_pos):
+                pass
+                # board.button_autosolve.update_color(colors.side_menu_selected)
             if board.button_next.is_over(mouse_pos):
+                board.button_next.update_color(colors.side_menu_selected)
                 board.initialize_board()
             elif board.button_previous.is_over(mouse_pos):
+                board.button_previous.update_color(colors.side_menu_selected)
                 board.initialize_board(False)
             else:
                 button = board.get_button_from_mouse_pos(mouse_pos)
@@ -403,20 +478,20 @@ class Menu:
 
 class Button:
 
-    def __init__(self, text, color, x_pos, y_pos, width, height):
+    def __init__(self, text, text_size, color, x_pos, y_pos, width, height):
         self.text = text
+        self.text_size = text_size
         self.color = color
         self.x = x_pos
         self.y = y_pos
         self.w = width
         self.h = height
 
-    def draw(self, surface, outline=None, text_size=None, xcenter=False):
+    def draw(self, surface, outline=None, xcenter=False):
         """
         Draws the button on the screen
         :param surface: the window/surface to draw on
         :param outline: outline color, if any
-        :param text_size: override text size of button
         :param xcenter: center this button on the x-axis? False by default
         TODO: optional parameter for font type override?
         """
@@ -436,14 +511,11 @@ class Button:
         pygame.draw.rect(surface, self.color, (self.x, self.y, self.w, self.h), 0)
 
         """
-        Draw text and text properties:
+        Draw text:
         """
-        if self.text != '':
+        if self.text != "" or self.text_size is not None:
 
-            if text_size is None:  # If no override, revert to default size
-                text_size = graphics.get_font_size()
-
-            font = pygame.font.Font("Resources/Fonts/FreeSansBold-Xgdd.ttf", text_size)
+            font = pygame.font.Font("Resources/Fonts/FreeSansBold-Xgdd.ttf", self.text_size)
             text = font.render(self.text, 1, colors.white)
             center = (self.x + (self.w//2 - text.get_width()//2), self.y + (self.h//2 - text.get_height()//2))
             surface.blit(text, center)
@@ -464,18 +536,28 @@ class Button:
         :param color: update the color of the button
         :param outline: this is assuming the button doesn't already have an outline
         :return: the button drawn on the window surface
+
+        Hint: changing color alone won't update it-
+        you need to constantly draw it.
         """
 
         self.color = color
         self.draw(window, outline)
 
-    def update_text(self, text, text_size=None):
+    def update_text(self, text):
+
+        """
+        :param text: string text of button
+        :return: None
+
+        TODO: Functionality to dynamically update text size
+        """
 
         if type(text) != str:  # Useful if integers are passed through
             text = str(text)
 
         self.text = text
-        self.draw(window, None, text_size, False)
+        self.draw(window, None, False)
 
 
 def text_objects(text, config):
@@ -505,10 +587,10 @@ window.fill(colors.grey_discord)
 pygame.display.set_caption(txt_rsrcs.caption)
 display_text(txt_rsrcs.main_menu_title)
 
-button_main = Button(txt_rsrcs.play, colors.tile_default, window.get_width() // 2, window.get_height() // 2, 250, 100)
-button_main.draw(window, colors.black, None, True)
-button_settings = Button(txt_rsrcs.settings, colors.tile_default, window.get_width() // 2, (window.get_height() // 2) + 150, 250, 100)
-button_settings.draw(window, colors.black, None, True)
+button_main = Button(txt_rsrcs.play, graphics.get_font_size(), colors.tile_default, window.get_width() // 2, window.get_height() // 2, 250, 100)
+button_main.draw(window, colors.black, True)
+button_settings = Button(txt_rsrcs.settings, graphics.get_font_size(), colors.tile_default, window.get_width() // 2, (window.get_height() // 2) + 150, 250, 100)
+button_settings.draw(window, colors.black, True)
 
 # ---------------------+
 pygame.display.flip()  #
@@ -538,3 +620,17 @@ while running:
             running = False
             pygame.quit()
             sys.exit()
+
+    if menu.is_game_screen:
+
+        """
+        It's critical that these events
+        update every frame (as opposed to
+        when pygame detects an event- which
+        means not every frame)
+        """
+
+        # ------------------------------------- #
+        board.update_submenu()                  #
+        board.update_side_menu(mouse_position)  #
+        # ------------------------------------- #
