@@ -28,7 +28,7 @@ import copy
 import sys
 from SudokuPuzzleSolver import PuzzleInterface
 from Resources.Strings import ButtonTxt
-from Resources.ConfigFiles import configcolor, configvideo
+from Resources.ConfigFiles import configcolor, configvideo, configkeypadcode
 
 # -------------+
 pygame.init()  #
@@ -62,7 +62,7 @@ class Board:
 
         # Tile selection mode
         self.click_to_type = True
-        self.is_typing = False
+        self.active_tile = None
 
     def initialize_board(self, forward=True):
 
@@ -120,7 +120,7 @@ class Board:
         :return: None
 
         First determines which method of tile selection.
-        TODO: Functionality for _cycle_tile
+        TODO: Functionality to activate _cycle_tile
         """
 
         if self.board_is_solved:
@@ -131,20 +131,36 @@ class Board:
         else:
             self._cycle_tile(button, user_input)
 
+    def clear_tile(self, tile_to_clear):
+
+        """
+        :param tile_to_clear: the tile to restore to its original properties
+        :return: none
+        """
+
+        tile_to_clear.update_text("")
+        tile_to_clear.update_color(colors.tile_default)
+        self.active_tile = None
+
     def _type_tile(self, button, user_input):
 
         """
-        :param button:
+        :param button: button to set or clear as active tile
         :param user_input: should be a keyboard press
-        :return:
+        :return: None
         """
 
-        if not self.is_typing:
-            self.is_typing = True
+        if self.active_tile is None:
+            self.active_tile = button
             button.update_color(colors.tile_selected)
         else:
-            # TODO: Process keyboard input
-            print(f"User input: {user_input}\nAnd dir: {dir(user_input)}")
+            value = translator.translate_pygame_keypadcode(user_input)
+            if value:
+                self.active_tile.update_text(value)
+                self.active_tile.update_color(colors.tile_confirmed)
+                self.active_tile = None
+            elif user_input == 127:  # 127 is delete key
+                self.clear_tile(button)
 
     def _cycle_tile(self, button, user_input):
         valid_numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9]
@@ -433,13 +449,13 @@ class Menu:
         # See def update_side_menu() for side menu buttons.
         # The reasoning for this is critical to understand.
 
-        #  MouseButtonDown - Execute functionality
+        #  MouseButtonDown - Execute tile / sub/side menu functionality
         if event.type == pygame.MOUSEBUTTONDOWN:
 
             if board.button_autosolve.is_over(mouse_pos):
                 pass
-                # board.button_autosolve.update_color(colors.side_menu_selected)
-            if board.button_next.is_over(mouse_pos):
+                # board.validate_solution()
+            elif board.button_next.is_over(mouse_pos):
                 board.button_next.update_color(colors.side_menu_selected)
                 board.initialize_board()
             elif board.button_previous.is_over(mouse_pos):
@@ -448,11 +464,20 @@ class Menu:
             else:
                 button = board.get_button_from_mouse_pos(mouse_pos)
                 if button:
-                    if button.text == " " or button.text == "":
-                        board.update_tile(button, event.button)
-                    elif button.color == colors.tile_selected:
-                        board.update_tile(button, event.button)
-                board.validate_solution()
+                    if event.button == 1:
+                        if button.text == " " or button.text == "" or button.color == colors.tile_confirmed:
+                            board.update_tile(button, event.button)
+                    elif event.button == 3:
+                        if button.color == colors.tile_selected or button.color == colors.tile_confirmed:
+                            board.clear_tile(button)
+                    board.validate_solution()
+
+        if event.type == pygame.KEYDOWN:
+            if board.active_tile is None:
+                return
+            else:
+                board.update_tile(board.active_tile, event.key)
+
 
     def _load_main_menu(self):
         pass
@@ -577,6 +602,7 @@ def display_text(text):
 
 graphics = configvideo.VideoConfig()
 colors = configcolor
+translator = configkeypadcode
 menu = Menu()
 board = Board()
 txt_rsrcs = ButtonTxt
