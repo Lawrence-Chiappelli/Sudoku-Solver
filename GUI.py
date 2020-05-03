@@ -643,38 +643,37 @@ pygame.display.flip()  #
 running = True
 while running:
 
-    # ---------------------------------------+
-    mouse_position = pygame.mouse.get_pos()  #
-    # ---------------------------------------+
+    # Don't accept any frame drawing if computer is busy
+    if not board.board_is_dual_solving:
 
-    for event in pygame.event.get():
+        # ---------------------------------------+
+        mouse_position = pygame.mouse.get_pos()  #
+        # ---------------------------------------+
 
-        if event.type == pygame.QUIT:
-            running = False
-            pygame.quit()
-            sys.exit()
+        for event in pygame.event.get():
 
-        if menu.is_main_menu:
-            menu.draw_main_menu(mouse_position)
-        elif menu.is_game_screen:
-            menu.draw_game_screen(mouse_position)
-        elif menu.is_settings_menu:
-            menu.draw_settings_menu(mouse_position)
-        else:
-            running = False
-            pygame.quit()
-            sys.exit()
+            if event.type == pygame.QUIT:
+                running = False
+                pygame.quit()
+                sys.exit()
 
-    if menu.is_game_screen:
+            if menu.is_main_menu:
+                menu.draw_main_menu(mouse_position)
+            elif menu.is_game_screen:
+                menu.draw_game_screen(mouse_position)
+            elif menu.is_settings_menu:
+                menu.draw_settings_menu(mouse_position)
 
-        """
-        It's critical that these events
-        update every frame (as opposed to
-        when pygame detects an event- which
-        means not every frame)
-        """
+        if menu.is_game_screen:
 
-        # ------------------------------------- #
-        board.update_submenu()                  #
-        board.update_side_menu(mouse_position)  #
-        # ------------------------------------- #
+            """
+            It's critical that these events
+            update every frame (as opposed to
+            when pygame detects an event- which
+            means not every frame)
+            """
+
+            # ------------------------------------- #
+            board.update_submenu()                  #
+            board.update_side_menu(mouse_position)  #
+            # ------------------------------------- #

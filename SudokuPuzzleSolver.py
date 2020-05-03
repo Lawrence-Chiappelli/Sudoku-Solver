@@ -102,7 +102,7 @@ class PuzzleInterface:
 
                 # Here, *RESET* the tile to 0 if the given solutions do not work. This is backtracking.
                 if self.dual_solve_this_board:
-                    self._update_gui(row_pos, col_pos, colors.tile_default, colors.red, "")
+                    self._update_gui(row_pos, col_pos, colors.tile_default, colors.red, test_val)
                 puzzle[row_pos][col_pos] = 0
 
         return False
