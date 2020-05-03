@@ -108,7 +108,7 @@ class PuzzleInterface:
         return False
 
     def _update_gui(self, row, col, color, color_outline, text):
-        time.sleep(0.07)
+        time.sleep(0.05)
         self.dual_solve_this_board[row][col].update_color(color, color_outline)
         self.dual_solve_this_board[row][col].update_text(text)
 
