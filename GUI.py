@@ -47,16 +47,17 @@ class Board:
         self.board = None
         self.board_solution = None
         self.board_is_solved = False
+        self.board_is_dual_solving = False
 
         # Submenu items
         self.button_submenu = None  # Individual button
         self.puzzle_as_file = None
         self.difficulty = None
         self.elapsed_start = None
-        self.num_total_puzzles = None
+        self.num_total_puzzles = 45  # TODO: Where to soft code?
 
         # Side menu
-        self.button_autosolve = None  # Solve button
+        self.button_auto_solve = None  # Solve button
         self.button_next = None  # Next button
         self.button_previous = None  # Previous button
 
@@ -66,14 +67,22 @@ class Board:
 
     def initialize_board(self, forward=True):
 
+        """
+        :param forward: indicate file selection direction (next or previous)
+        :return: None
+
+        self.board_is_solved and self.board_solution should also be reset here.
+        These values are re-used when the player selects the next puzzle.
+        """
+
         offset = 8  # For micro-pixel adjustment- if full-screen is NOT desired
         w = (window.get_width() // self.row_len) - (self.margin+offset)
         h = (window.get_height() // self.col_len) - (self.margin+offset)
 
         direction_index = self._get_puzzle_direction(forward)
         self.board = self._choose_puzzle(direction_index)
-        self.board_solution = None  # TODO: move to a more optimal location
-        # Suggestion: _process_completed_board() (requires testing)
+        self.board_is_solved = False
+        self.board_solution = None
 
         # -------------------------------------+
         self._set_tile_properties(0, 0, w, h)  #
@@ -90,31 +99,32 @@ class Board:
     def validate_solution(self):
 
         # Return if board contains any 0s / is incomplete
-        print(f"Validating")
-        for row in self.board:
-            for button in row:
-                if button.text == " " or button.text == "":
-                    print(f"Cannot validate yet")
-                    return
+        if not self.board_is_dual_solving:
+            for row in self.board:
+                for button in row:
+                    if button.text == " " or button.text == "":
+                        return
 
-        # Only solve the original board once. This takes the longest- optimal to do so here.
+        # Start solving the board in a separate solution
         if self.board_solution is None:
-            print("Solving...")
             self.button_submenu.update_text(txt_rsrcs.solving)
             self.button_submenu.update_color(colors.grey)
-            self.board_solution = puzzle_interface.solve_puzzle_with_backtracking(puzzle_interface.read_puzzle_from_file(self.puzzle_file))
+
+            puzzle_og = puzzle_interface.read_puzzle_from_file(self.puzzle_file)  # Original file to read from
+            if self.board_is_dual_solving:
+                self.board_solution = puzzle_interface.solve_puzzle_with_backtracking(puzzle_og, self.board)
+            else:
+                self.board_solution = puzzle_interface.solve_puzzle_with_backtracking(puzzle_og)
             self.button_submenu.update_color(colors.submenu)
-        print(f"Done solving")
 
-        # Create a copy of the board- it's original state is being converted for comparisons
-        user_board_copy = copy.copy(self.board)
-        self.board = puzzle_interface.format_board_manually(self.board)
-
-        if self.board == self.board_solution:
-            self._process_completed_board(user_board_copy)
+        if self.board_is_dual_solving:
+            self.board_is_solved = True
+            self._process_solved_board()
+        elif self.board_solution == copy.copy(puzzle_interface.format_board_manually(self.board)):
+            self.board_is_solved = True
+            self._process_solved_board()
         else:
-            # Re-convert the board if incorrect solution
-            self.board = user_board_copy
+            print(f"Incorrect solution:\n{self.board}\nvs\n{self.board_solution}")
 
     def update_tile(self, button, user_input):
 
@@ -204,12 +214,8 @@ class Board:
         This seems to be the most optimal place
         """
 
-        # TODO: Relocate and test this
-        if self.num_total_puzzles is None:
-            self.num_total_puzzles = len(puzzle_interface.get_all_csci4463_puzzle_files())
-
         if forward:
-            if self.puzzle_index <= self.num_total_puzzles:
+            if self.puzzle_index < self.num_total_puzzles:
                 return 1
         else:
             if self.puzzle_index != 0:
@@ -300,28 +306,32 @@ class Board:
         button3 = Button(txt_rsrcs.cycle, graphics.get_font_size(20), colors.submenu, x, h * bandaid + bandaid, w, (h + self.margin) // 3)  # Make this 3 a 2 to revert to half size
         button3.draw(window, colors.black, False)
 
-        self.button_autosolve = Button(txt_rsrcs.auto_solve, graphics.get_font_size(15), colors.submenu, x+self.margin, h+(self.margin*11), w-(self.margin*bandaid), (h-self.margin) // bandaid)
-        self.button_autosolve.draw(window, colors.grey, False)
+        self.button_auto_solve = Button(txt_rsrcs.auto_solve, graphics.get_font_size(15), colors.submenu, x + self.margin, h + (self.margin * 11), w - (self.margin * bandaid), (h - self.margin) // bandaid)
+        self.button_auto_solve.draw(window, colors.grey, False)
         self.button_next = Button(txt_rsrcs.arrow_next, graphics.get_font_size(), colors.submenu, x+self.margin, (h * bandaid + bandaid) + w + (self.margin*3) + self.margin, w - (self.margin*bandaid), ((h + self.margin) // 3) - (self.margin*6))
         self.button_next.draw(window, colors.grey_discord, False)
         self.button_previous = Button(txt_rsrcs.arrow_previous, graphics.get_font_size(), colors.submenu, x+self.margin, (h * bandaid + bandaid) + w * bandaid + self.margin, w - (self.margin*bandaid), ((h + self.margin) // 3) - (self.margin*6))
         self.button_previous.draw(window, colors.grey_discord, False)
         return None
 
-    def _process_completed_board(self, board_to_update):
+    def _process_solved_board(self):
 
         """
-        :param board_to_update: the board that's copied
-        :return: a formatted board to indicate completion
+        :return: None
+
+        Handles colors and otherwise cosmetics
+        to indicate successful board completion
 
         Note: The player must click the
         cycle arrow to start a new puzzle.
         """
 
-        self.board_is_solved = True
-        for row in board_to_update:
+        if self.board_is_dual_solving:
+            self.board_is_dual_solving = False
+
+        for row in self.board:
             for button in row:
-                button.update_color(colors.tile_solved)
+                button.update_color(colors.tile_solved, colors.black)
         self.button_submenu.update_color(colors.puzzle_solved)
 
         time_completed = round(time.perf_counter()-self.elapsed_start)
@@ -330,6 +340,7 @@ class Board:
     def update_submenu(self):
 
         """
+        Submenu: Puzzle | Difficulty | Time
         :return: None
 
         This method handles updating the submenu
@@ -340,7 +351,7 @@ class Board:
         """
 
         if self.board_is_solved:  # Stop updating this particular text is the user solved the board
-            return None
+            return
 
         text = f"Puzzle {self.puzzle_index+1}/{len(puzzle_interface.get_all_csci4463_puzzle_files())} | Difficulty: {board.difficulty} | Time elapsed: {round(time.perf_counter()-self.elapsed_start)}"
         board.button_submenu.update_text(text)
@@ -348,6 +359,7 @@ class Board:
     def update_side_menu(self, mouse_pos):
 
         """
+        Side menu: Puzzle file | Auto Solve | Next/previous
         :param mouse_pos: (x, y) position of mouse
         :return: None
 
@@ -362,30 +374,29 @@ class Board:
         is clicked, not be reset to default.
 
         This method update every frame, as opposed
-        to when pygame detects an event. Ultimately,
+        to when pygame detects an event. In essence:
         the highlight color will remain after
         the button is clicked.
         """
+
         # Button - auto solve
-        if not self.board_is_solved:
-            if self.button_autosolve.is_over(mouse_pos):
-                self.button_autosolve.update_color(colors.green)
+        if not self.board_is_dual_solving:
+            if self.button_auto_solve.is_over(mouse_pos):
+                self.button_auto_solve.update_color(colors.green)
             else:
-                self.button_autosolve.update_color(colors.submenu)
+                self.button_auto_solve.update_color(colors.submenu)
 
-        # Button - next puzzle
-        if self.button_next.is_over(mouse_pos):
-            self.button_next.update_color(colors.tile_hovering)
-        else:
-            self.button_next.update_color(colors.submenu)
+            # Button - next puzzle
+            if self.button_next.is_over(mouse_pos):
+                self.button_next.update_color(colors.tile_hovering)
+            else:
+                self.button_next.update_color(colors.submenu)
 
-        # Button - previous puzzle
-        if self.button_previous.is_over(mouse_pos):
-            self.button_previous.update_color(colors.tile_hovering)
-        else:
-            self.button_previous.update_color(colors.submenu)
-
-        return None
+            # Button - previous puzzle
+            if self.button_previous.is_over(mouse_pos):
+                self.button_previous.update_color(colors.tile_hovering)
+            else:
+                self.button_previous.update_color(colors.submenu)
 
     def get_button_from_mouse_pos(self, mouse_pos):
 
@@ -447,7 +458,7 @@ class Menu:
 
     def draw_game_screen(self, mouse_pos):
 
-        if board.board_is_solved:
+        if board.board_is_dual_solving:
             return
 
         # See def update_side_menu() for side menu buttons.
@@ -456,14 +467,17 @@ class Menu:
         #  MouseButtonDown - Execute tile / sub/side menu functionality
         if event.type == pygame.MOUSEBUTTONDOWN:
 
-            if board.button_autosolve.is_over(mouse_pos):
-                pass
-                # board.validate_solution()
+            # Button - auto solve
+            if board.button_auto_solve.is_over(mouse_pos) and board.active_tile is None:
+                board.board_is_dual_solving = True
+                board.validate_solution()
+
+            # Button - next puzzle
             elif board.button_next.is_over(mouse_pos):
-                board.button_next.update_color(colors.side_menu_selected)
                 board.initialize_board()
+
+            # Button - previous puzzle
             elif board.button_previous.is_over(mouse_pos):
-                board.button_previous.update_color(colors.side_menu_selected)
                 board.initialize_board(False)
             else:
                 button = board.get_button_from_mouse_pos(mouse_pos)
@@ -475,6 +489,7 @@ class Menu:
                         if button.color == colors.tile_selected or button.color == colors.tile_confirmed:
                             board.clear_tile(button)
 
+        # KeyDown - To type in a number for an active tile
         if event.type == pygame.KEYDOWN:
             if board.active_tile is None:
                 return
