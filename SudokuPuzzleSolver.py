@@ -27,12 +27,15 @@ import os
 import warnings
 import copy
 import re
+import time
+from Resources.ConfigFiles import configcolor as colors
 
 
 class PuzzleInterface:
 
     def __init__(self):
         self.all_puzzle_files = [puzzlefile for puzzlefile in os.listdir("CSCI4463SudokuPuzzles") if puzzlefile.endswith(".txt")]
+        self.dual_solve_this_board = None
 
     def get_all_csci4463_puzzle_files(self):
         return self.all_puzzle_files
@@ -67,34 +70,47 @@ class PuzzleInterface:
             with open(file, "r") as puzzle:
                 return self.get_puzzle_as_2d_array(puzzle)
 
-    def solve_puzzle_with_backtracking(self, puzzle):
+    def solve_puzzle_with_backtracking(self, puzzle, puzzle_with_buttons=None):
+
         """
-
-        Make sure to convert the puzzle to a 2D array
-
-        :param puzzle:
+        :param puzzle: converted puzzle
+        :param puzzle_with_buttons: original board without conversion (need access to buttons)
         :return: the puzzle
+
+        Note: Convert the puzzle to a 2D array to use this
         """
+
+        if self.dual_solve_this_board is None and puzzle_with_buttons:
+            self.dual_solve_this_board = puzzle_with_buttons
 
         empty_tile = self._get_tile_position(puzzle)
 
         if empty_tile is None:
+            self.dual_solve_this_board = None
             return puzzle
-            # return True
         else:
             row_pos, col_pos = empty_tile
 
         for test_val in range(1, 10):
             if self._check_newval_validity(row_pos, col_pos, test_val, puzzle):
                 puzzle[row_pos][col_pos] = test_val
+                if self.dual_solve_this_board:
+                    self._update_gui(row_pos, col_pos, colors.tile_default, colors.green, test_val)
 
-                if self.solve_puzzle_with_backtracking(puzzle):
+                if self.solve_puzzle_with_backtracking(puzzle, None):
                     return self._format_board_automatically(puzzle)
 
                 # Here, *RESET* the tile to 0 if the given solutions do not work. This is backtracking.
+                if self.dual_solve_this_board:
+                    self._update_gui(row_pos, col_pos, colors.tile_default, colors.red, "")
                 puzzle[row_pos][col_pos] = 0
 
         return False
+
+    def _update_gui(self, row, col, color, color_outline, text):
+        time.sleep(0.05)
+        self.dual_solve_this_board[row][col].update_color(color, color_outline)
+        self.dual_solve_this_board[row][col].update_text(text)
 
     def _check_newval_validity(self, row, col, val_to_test, puzzle):
 
@@ -200,10 +216,6 @@ class PuzzleInterface:
                 position += 1
 
         return new_board
-
-
-
-
 
 
 """

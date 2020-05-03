@@ -11,7 +11,10 @@ The implemented algorithm's accuracy has been verified by comparing its outputte
 
 ## Description
 
-Puzzles included are those varying in difficulty provided by the professor as well as randomly generated ones. Click a tile to cycle through numbers 1-9. Right-click the same tile to cycle backwards.
+Puzzles included are those varying in difficulty provided by the professor as well as randomly generated ones. 
+
+Click any tile to make it active. Then enter a number of your choice.
+To clear a tile: right-click, or press DEL while tile is active.
 
 Sudoku rules explained [here](https://www.bigfishgames.com/blog/how-to-solve-sudoku-puzzles-quickly-and-reliably/).
 
@@ -19,7 +22,7 @@ Sudoku rules explained [here](https://www.bigfishgames.com/blog/how-to-solve-sud
 * A Sudoku board consists of 9x9 tiles
 * All numbers in each row must be unique
 * All numbers in each column must be unique
-* Diagnal numbers can be identical
+* Diagonal numbers can be identical
 
 ## Download
 The installer is available under [releases](https://github.com/Lawrence-Chiappelli/Sudoku-Solver/releases).
@@ -38,14 +41,14 @@ It will generate the .exe under the "dist" folder, so make sure to cut+paste it 
 
 Just a fair warning- pyinstaller can be finicky. If using anaconda, install pyinstaller in the same anaconda virtual environment that you're using with this project.
 
-Also note: include `--hidden-import "matplotlib` to the above command if you are contributing and using matplotlib. It behaves very strangely, which may be in part due to it's several dependencies on other libraries.
+Also note: include `--hidden-import "matplotlib"` to the above command if you are contributing and using matplotlib. It behaves very strangely, which may be in part due to it's several dependencies on other libraries.
 
 ## Compatability
 
 ### Computer Specifications
 Your computer requires very minimal processing power to run this application. 
 
-However, there may be noticable lag when the program attempts to solve each puzzle *once*. As a vague benchmark: the easier puzzles takes roughly 1 second or less to solve on my PC. The hardest single puzzle takes about 5 seconds to solve. This area of performance should be considered moot nonetheless, as the algorithm is only run once and the duration may only last seconds.
+However, there may be noticeable lag when the program attempts to solve each puzzle *once*. As a vague benchmark: the easier puzzles takes roughly 1 second or less to solve on my PC. The hardest single puzzle takes about 5 seconds to solve. This area of performance should be considered moot nonetheless, as the algorithm is only run once and the duration may only last seconds.
 
 ### Operating System
 * **Windows 10**: Tested and working
