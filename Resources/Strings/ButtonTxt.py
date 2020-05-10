@@ -32,7 +32,7 @@ settings = "Settings"
 
 puzzle = "File:"
 auto_solve = "SOLVE"
-solving = "Getting solution, please keep this window open..."
+solving = "Solving, please wait..."
 wip = "WIP"
 cycle = "Cycle:"
 arrow_next = "-->"
