@@ -78,6 +78,7 @@ class PuzzleInterface:
             self.gui = gui
 
         if empty_tile is None:
+            self.gui = None  # Clear out the current GUI when done
             return source_puzzle
         else:
             row_pos, col_pos = empty_tile

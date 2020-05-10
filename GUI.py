@@ -158,6 +158,7 @@ class Board:
         # Are we dual solving? Solve puzzle with visual animation.
         # If not, make comparisons with solution board and user GUI board.
         if self.dual_solving:
+            print(f"DUAL SOLVING")
             self.button_submenu.update_text(txt_rsrcs.solving)
             self.button_submenu.update_color(colors.puzzle_solving, colors.white)
             self.board_solution = puzzle_interface.solve_puzzle_with_backtracking(source, self.board)
@@ -167,7 +168,8 @@ class Board:
             if self.board_solution is None:
                 self.button_submenu.update_text(txt_rsrcs.solving)
                 self.button_submenu.update_color(colors.grey_discord)
-                self.board_solution = puzzle_interface.solve_puzzle_with_backtracking(source)
+                self.board_solution = puzzle_interface.solve_puzzle_with_backtracking(source, None)
+                self.button_submenu.update_color(colors.submenu)
 
             if self.board_solution == gui_board_str:
                 self._process_solved_board()
@@ -398,7 +400,6 @@ class Board:
                     solution_converted = puzzle_interface.from_string_to_list(self.board_solution)
                     button.update_text(solution_converted[r][c])
 
-
         self.button_submenu.update_color(colors.puzzle_solved)
         time_completed = round(time.perf_counter()-self.elapsed_start)
         self.button_submenu.update_text(f"PUZZLE SOLVED! | Time to complete: {time_completed} seconds")
@@ -544,6 +545,7 @@ class Menu:
             if board.button_auto_solve.is_over(mouse_pos) and not board.board_is_solved:
                 board.dual_solving = True
                 board.solve_board()
+                print(f"Turning off dual solving...")
                 board.dual_solving = False
 
             # Button - next puzzle
