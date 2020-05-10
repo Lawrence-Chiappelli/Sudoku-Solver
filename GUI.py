@@ -26,7 +26,7 @@ import pygame
 import time
 import sys
 from SudokuPuzzleSolver import PuzzleInterface
-from Resources.Strings import ButtonTxt
+from Resources.Strings import ButtonText
 from Resources.ConfigFiles import configcolor, configvideo, configkeypadcode
 
 # -------------+
@@ -158,15 +158,14 @@ class Board:
         # Are we dual solving? Solve puzzle with visual animation.
         # If not, make comparisons with solution board and user GUI board.
         if self.dual_solving:
-            print(f"DUAL SOLVING")
-            self.button_submenu.update_text(txt_rsrcs.solving)
+            self.button_submenu.update_text(text_resources.solving)
             self.button_submenu.update_color(colors.puzzle_solving, colors.white)
             self.board_solution = puzzle_interface.solve_puzzle_with_backtracking(source, self.board)
             self._process_solved_board()
         else:
             # Grab solved board if not already solved
             if self.board_solution is None:
-                self.button_submenu.update_text(txt_rsrcs.solving)
+                self.button_submenu.update_text(text_resources.solving)
                 self.button_submenu.update_color(colors.grey_discord)
                 self.board_solution = puzzle_interface.solve_puzzle_with_backtracking(source, None)
                 self.button_submenu.update_color(colors.submenu)
@@ -175,8 +174,7 @@ class Board:
                 self._process_solved_board()
             elif type(self.board_solution) != str or type(gui_board_str) != str:
                 raise TypeError(f"Fatal: both the computed solution {type(self.board_solution)} and converted board {type(gui_board_str)} need to be strings.")
-            else:
-                print(f"Invalid solution!")
+
 
     def _should_solve(self):
 
@@ -362,18 +360,18 @@ class Board:
         w += bandaid
         h += bandaid
 
-        button1 = Button(txt_rsrcs.puzzle, graphics.get_font_size(20), colors.side_menu, x, (y+self.margin) // bandaid, w, (h // bandaid) - self.margin)
+        button1 = Button(text_resources.puzzle, graphics.get_font_size(20), colors.side_menu, x, (y + self.margin) // bandaid, w, (h // bandaid) - self.margin)
         button1.draw(window, colors.black, False)
         button2 = Button(self.puzzle_file, graphics.get_font_size(18), colors.side_menu, x, (h // bandaid), w, (h // bandaid) - bandaid)
         button2.draw(window, colors.black, False)
-        button3 = Button(txt_rsrcs.cycle, graphics.get_font_size(20), colors.submenu, x, h * bandaid + bandaid, w, (h + self.margin) // 3)  # Make this 3 a 2 to revert to half size
+        button3 = Button(text_resources.cycle, graphics.get_font_size(20), colors.submenu, x, h * bandaid + bandaid, w, (h + self.margin) // 3)  # Make this 3 a 2 to revert to half size
         button3.draw(window, colors.black, False)
 
-        self.button_auto_solve = Button(txt_rsrcs.auto_solve, graphics.get_font_size(15), colors.submenu, x + self.margin, h + (self.margin * 11), w - (self.margin * bandaid), (h - self.margin) // bandaid)
+        self.button_auto_solve = Button(text_resources.auto_solve, graphics.get_font_size(15), colors.submenu, x + self.margin, h + (self.margin * 11), w - (self.margin * bandaid), (h - self.margin) // bandaid)
         self.button_auto_solve.draw(window, colors.grey, False)
-        self.button_next = Button(txt_rsrcs.arrow_next, graphics.get_font_size(), colors.submenu, x+self.margin, (h * bandaid + bandaid) + w + (self.margin*3) + self.margin, w - (self.margin*bandaid), ((h + self.margin) // 3) - (self.margin*6))
+        self.button_next = Button(text_resources.arrow_next, graphics.get_font_size(), colors.submenu, x + self.margin, (h * bandaid + bandaid) + w + (self.margin * 3) + self.margin, w - (self.margin * bandaid), ((h + self.margin) // 3) - (self.margin * 6))
         self.button_next.draw(window, colors.grey_discord, False)
-        self.button_previous = Button(txt_rsrcs.arrow_previous, graphics.get_font_size(), colors.submenu, x+self.margin, (h * bandaid + bandaid) + w * bandaid + self.margin, w - (self.margin*bandaid), ((h + self.margin) // 3) - (self.margin*6))
+        self.button_previous = Button(text_resources.arrow_previous, graphics.get_font_size(), colors.submenu, x + self.margin, (h * bandaid + bandaid) + w * bandaid + self.margin, w - (self.margin * bandaid), ((h + self.margin) // 3) - (self.margin * 6))
         self.button_previous.draw(window, colors.grey_discord, False)
         return None
 
@@ -504,19 +502,19 @@ class Menu:
 
             # Button - play
             if button_main.is_over(mouse_pos):
-                if button_main.text == txt_rsrcs.play:
+                if button_main.text == text_resources.play:
                     button_main.update_color(colors.green)
             else:
                 button_main.update_color(colors.tile_default)
-                button_main.update_text(txt_rsrcs.play)
+                button_main.update_text(text_resources.play)
 
             # Button - settings
             if button_settings.is_over(mouse_pos):
-                if button_settings.text == txt_rsrcs.settings:
+                if button_settings.text == text_resources.settings:
                     button_settings.update_color(colors.green)
             else:
                 button_settings.update_color(colors.tile_default)
-                button_settings.update_text(txt_rsrcs.settings)
+                button_settings.update_text(text_resources.settings)
 
         # MouseButtonDown - loads game screens
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -545,7 +543,6 @@ class Menu:
             if board.button_auto_solve.is_over(mouse_pos) and not board.board_is_solved:
                 board.dual_solving = True
                 board.solve_board()
-                print(f"Turning off dual solving...")
                 board.dual_solving = False
 
             # Button - next puzzle
@@ -581,7 +578,7 @@ class Menu:
         # self.is_settings_menu = True
         self.is_game_screen = False
         button_settings.update_color(colors.blue)
-        button_settings.update_text(txt_rsrcs.wip)
+        button_settings.update_text(text_resources.wip)
 
     def _load_game_menu(self):
         self.is_main_menu = False
@@ -699,17 +696,19 @@ colors = configcolor
 translator = configkeypadcode
 menu = Menu()
 board = Board()
-txt_rsrcs = ButtonTxt
+text_resources = ButtonText
 puzzle_interface = PuzzleInterface()
 
 window = pygame.display.set_mode(graphics.get_resolution())
-window.fill(colors.grey_discord)
-pygame.display.set_caption(txt_rsrcs.caption)
-display_text(txt_rsrcs.main_menu_title)
+window.fill(colors.grey)
+pygame.display.set_icon(pygame.image.load(r"./Resources/Images/icon.png"))
+pygame.display.set_caption(text_resources.caption)
+display_text(text_resources.main_menu_title)
 
-button_main = Button(txt_rsrcs.play, graphics.get_font_size(), colors.tile_default, window.get_width() // 2, window.get_height() // 2, 250, 100)
+
+button_main = Button(text_resources.play, graphics.get_font_size(), colors.tile_default, window.get_width() // 2, window.get_height() // 2, 250, 100)
 button_main.draw(window, colors.black, True)
-button_settings = Button(txt_rsrcs.settings, graphics.get_font_size(), colors.tile_default, window.get_width() // 2, (window.get_height() // 2) + 150, 250, 100)
+button_settings = Button(text_resources.settings, graphics.get_font_size(), colors.tile_default, window.get_width() // 2, (window.get_height() // 2) + 150, 250, 100)
 button_settings.draw(window, colors.black, True)
 
 # ---------------------+
@@ -717,8 +716,7 @@ pygame.display.flip()  #
 # ---------------------+
 
 running = True
-fps = 30
-clock = pygame.time.Clock()
+
 
 while running:
 
