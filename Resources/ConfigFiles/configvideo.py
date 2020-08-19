@@ -22,8 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-# TODO: Remove unused packages not needed for font detection
-
 
 class VideoConfig:
 
@@ -56,42 +54,6 @@ class VideoConfig:
 
     def get_resolution(self):
         return self._resolution
-
-    # def _determine_font(self):
-    #
-    #     all_system_fonts = self._process_system_fonts()
-    #
-    #     if self.__preferred_font in all_system_fonts:
-    #         self._font_name = self.__preferred_font
-    #         print(f"Using preferred font: {self._font_name}")
-    #     else:
-    #         self._font_name = self.__fallback_font
-
-    # def _process_system_fonts(self):
-    #
-    #     """
-    #     :return: all fonts based on user's operating system
-    #
-    #     This GitHub snippet removes the extra characters
-    #     attached the font string, such as slashes and
-    #     any parent directories:
-    #
-    #     https://gist.github.com/yoavram/5141090
-    #     """
-    #
-    #     from matplotlib import font_manager
-    #     import platform
-    #
-    #     fonts = []
-    #     if platform.system() == "Windows":  # TODO: Look into packages that are built for other OS's
-    #         for x in font_manager.win32InstalledFonts():
-    #             x = x[::-1]
-    #             dot = x.find('.')
-    #             slash = x.find('\\')
-    #             x = x[slash - 1:dot:-1]
-    #             fonts += [x]
-    #         fonts.sort()
-    #     return fonts
 
 
 """

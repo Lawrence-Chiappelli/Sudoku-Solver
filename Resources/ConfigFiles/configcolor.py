@@ -25,18 +25,28 @@ SOFTWARE.
 white = (255, 255, 255)
 red = (255, 0, 0)
 blue = (0, 0, 255)
+blue_lighter = (102, 179, 255)
+blue_cyanish = (26, 198, 255)
 green = (0, 255, 0)
 black = (0, 0, 0)
 grey_discord = (44, 47, 51)
 grey = (64, 64, 64)
 grey_light = (179, 179, 179)
+pinkish = (191, 128, 255)
+purple = (117, 26, 255)
+purple_light = (153, 102, 255)
+orange = (255, 102, 0)
+orange_light = (255, 153, 51)
 
 tile_default = (0, 102, 204)
-tile_selected = grey_discord
-tile_hovering = (102, 179, 255)
+tile_selected = blue_lighter
+tile_confirmed = blue_cyanish
+tile_hovering = blue_lighter
 tile_solved = (71, 209, 71)
 puzzle_solved = (0, 153, 51)
+puzzle_solving = grey
 
 submenu = (0, 92, 153)
 side_menu = (102, 102, 255)
-side_menu_2 = (191, 128, 255)
+side_menu_hovering = pinkish
+side_menu_selected = blue_lighter
